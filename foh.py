@@ -39,7 +39,7 @@ def report(movie, movie_data_dict, movie_timedata):
 	for key in movie_data_dict:
 		print(key + ': ' + str(movie_data_dict[key]))
 	print(dividor)
-	print('At 7:30')
+	print('At 7:00')
 	for key in pre_bets:
 		print(key + ': ' + str(pre_bets[key]))
 	print(dividor)
@@ -58,7 +58,7 @@ def report(movie, movie_data_dict, movie_timedata):
 	for key in movie_data_dict:
 		append_to_file(report_data_path, key + ': ' + str(movie_data_dict[key]))
 	append_to_file(report_data_path, dividor)
-	append_to_file(report_data_path, 'At 7:30')
+	append_to_file(report_data_path, 'At 7:00')
 	for key in pre_bets:
 		append_to_file(report_data_path, key + ': ' + str(pre_bets[key]))
 	append_to_file(report_data_path, dividor)
