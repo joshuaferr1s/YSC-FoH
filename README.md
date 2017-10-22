@@ -9,7 +9,7 @@ Simply download this repository and then cd into the folder wherever you have sa
 ## About York Student Cinema (YSC)
 
 YSC is a student cinema based in the University of York, England.
-
+http://www.yorkstudentcinema.org
 ## Authors
 
 * **Joshua Ferris** - *Githubk* - [joshuaferr1s](https://github.com/joshuaferr1s)
