@@ -1,4 +1,4 @@
-from time import gmtime, strftime
+from time import localtime, strftime
 from file_helpers import *
 
 
@@ -127,7 +127,7 @@ def record(exists, movie):
 		print(scene_splitter)
 		print(scene_splitter)
 
-		date_time_now = strftime("%H%M", gmtime())
+		date_time_now = strftime("%H%M", localtime())
 
 		if change == 'stop':
 			recording = False
