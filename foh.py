@@ -6,30 +6,32 @@ def report(movie, movie_data_dict, movie_timedata):
 	# Create a dictionary for each minute where there exists a record.
 	# Also create dictionaries for specific intervals to measure.
 	minute_report = dict()
-	pre_bets = {'£3' : 0, '£4' : 0, 'Free' : 0, 'Half-Price' : 0, 'Total' : 0}
+	pre_bets = {'£3' : 0, '£4' : 0, 'Free' : 0, 'Half-Price' : 0, 'Special' : 0, 'Total' : 0}
 
 	for curr in movie_timedata:
 		try:
 			curr_time = curr.split('_')[0]
 			curr_ticket = curr.split('_')[1]
+			curr_time_min = str(int(curr_time) - 1830)
 
-			if curr_time not in minute_report:
-				minute_report[curr_time] = {'£3' : 0, '£4' : 0, 'Free' : 0, 'Half-Price' : 0, 'Total' : 0}
+			if curr_time_min not in minute_report:
+				minute_report[curr_time_min] = {'£3' : 0, '£4' : 0, 'Free' : 0, 'Half-Price' : 0, 'Special' : 0, 'Total' : 0}
 			
 			if curr_ticket.split(' ')[0] == 'Added':
-				minute_report[curr_time][curr_ticket.split(' ')[1]] += 1
-				minute_report[curr_time]['Total'] += 1
+				minute_report[curr_time_min][curr_ticket.split(' ')[1]] += 1
+				minute_report[curr_time_min]['Total'] += 1
 			else:
-				minute_report[curr_time][curr_ticket.split(' ')[1]] -= 1
-				minute_report[curr_time]['Total'] -= 1
+				minute_report[curr_time_min][curr_ticket.split(' ')[1]] -= 1
+				minute_report[curr_time_min]['Total'] -= 1
 		except IndexError:
 			break
 	for key in minute_report:
-		if int(key) < 1901:
+		if int(key) < 31:
 			pre_bets['£3'] = minute_report[key]['£3']
 			pre_bets['£4'] = minute_report[key]['£4']
 			pre_bets['Free'] = minute_report[key]['Free']
 			pre_bets['Half-Price'] = minute_report[key]['Half-Price']
+			pre_bets['Special'] = minute_report[key]['Special']
 			pre_bets['Total'] = minute_report[key]['Total']
 
 	dividor = '-'*(len('Movie: '+movie)+4)
@@ -79,14 +81,14 @@ def record(exists, movie):
 	recording = True
 	movie_data_dict = dict()
 	movie_timedata = list()
-	ticket_type = {'1' : 'Added £3', '2' : 'Removed £3', '3' : 'Added £4', '4' : 'Removed £4', '5' : 'Added Free', '6' : 'Removed Free', '7' : 'Added Half-Price', '8' : 'Removed Half-Price'}
+	ticket_type = {'3' : 'Added £3', '3r' : 'Removed £3', '4' : 'Added £4', '4r' : 'Removed £4', 'f' : 'Added Free', 'fr' : 'Removed Free', 'h' : 'Added Half-Price', 'hr' : 'Removed Half-Price', 's' : 'Added Special', 'sr' : 'Removed Special'}
 
 	if exists:
 		#Load past data
 		try:
 			movie_data_dict = load_movie_data('movies/' + movie + '.json')
 		except FileNotFoundError:
-			movie_data_dict = {'£3' : 0, '£4' : 0, 'Free' : 0, 'Half-Price' : 0, 'Total' : 0}
+			movie_data_dict = {'£3' : 0, '£4' : 0, 'Free' : 0, 'Half-Price' : 0, 'Special' : 0,'Total' : 0}
 		try:
 			movie_timedata = file_to_list('movies/' + movie + '_timedata.txt')
 		except FileNotFoundError:
@@ -94,7 +96,7 @@ def record(exists, movie):
 	else:
 		create_file(movie + '.json')
 		create_file(movie + '_timedata.txt')
-		movie_data_dict = {'£3' : 0, '£4' : 0, 'Free' : 0, 'Half-Price' : 0, 'Total' : 0}
+		movie_data_dict = {'£3' : 0, '£4' : 0, 'Free' : 0, 'Half-Price' : 0, 'Special' : 0,'Total' : 0}
 
 	while recording:
 		# Capacity Check
@@ -111,17 +113,15 @@ def record(exists, movie):
 		scene_splitter = '#'*(len('£3: ' + str(movie_data_dict['£3']) + ' | £4: ' + str(movie_data_dict['£4']) + ' | Free: ' + str(movie_data_dict['Free']) + ' | Half-Price: ' + str(movie_data_dict['Half-Price']) + ' | Total: ' + str(movie_data_dict['Total'])))
 		print(dividor)
 		print('Movie: ' + movie)
-		print('£3: ' + str(movie_data_dict['£3']) + ' | £4: ' + str(movie_data_dict['£4']) + ' | Free: ' + str(movie_data_dict['Free']) + ' | Half-Price: ' + str(movie_data_dict['Half-Price']) + ' | Total: ' + str(movie_data_dict['Total']))
+		print('£3: ' + str(movie_data_dict['£3']) + ' | £4: ' + str(movie_data_dict['£4']) + ' | Free: ' + str(movie_data_dict['Free']) + ' | Half-Price: ' + str(movie_data_dict['Half-Price']) + ' | Special: ' + str(movie_data_dict['Special']) + ' | Total: ' + str(movie_data_dict['Total']))
 		print(dividor)
 		print('Recording Mode')
-		print('1 - Add £3')
-		print('2 - Remove £3')
-		print('3 - Add £4')
-		print('4 - Remove £4')
-		print('5 - Add Free')
-		print('6 - Remove Free')
-		print('7 - Add Half-Price')
-		print('8 - Remove Half-Price')
+		print('(3) £3')
+		print('(4) £4')
+		print('(f) Free')
+		print('(h) Half-Price')
+		print('(s) Special')
+		print('To remove x, type xr.')
 		print('* stop')
 		change = input('> ')
 		print(scene_splitter)
@@ -161,12 +161,12 @@ while running:
 	movies_recorded = rem_dups(get_files('movies/'))
 	print('')
 	print('YSC Front of House')
-	print('* Record')
+	print('* record')
 	if len(movies_recorded) > 0:
-		print('* Report')
+		print('* report')
 	print('* quit')
 	choice = input('> ')
-	if choice == 'Record':
+	if choice == 'record':
 		if len(movies_recorded) > 0:
 			print('Movies already Recorded:')
 			for i in movies_recorded:
@@ -188,7 +188,7 @@ while running:
 			pass
 		else:
 			print('Invalid Input.')
-	elif choice == 'Report' and len(movies_recorded) > 0:
+	elif choice == 'report' and len(movies_recorded) > 0:
 		print('Movies already Recorded:')
 		running_sub = True
 		while running_sub:
