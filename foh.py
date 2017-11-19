@@ -12,8 +12,11 @@ def report(movie, movie_data_dict, movie_timedata):
 		try:
 			curr_time = curr.split('_')[0]
 			curr_ticket = curr.split('_')[1]
-			curr_time_min = str(int(curr_time) - 1830)
-
+			if int(curr_time) < 1900:
+				curr_time_min = str(int(curr_time) - 1830)
+			else:
+				curr_time_min = str(int(curr_time) - 1870)
+				
 			if curr_time_min not in minute_report:
 				minute_report[curr_time_min] = {'£3' : 0, '£4' : 0, 'Free' : 0, 'Half-Price' : 0, 'Special' : 0, 'Total' : 0}
 			
