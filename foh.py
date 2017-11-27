@@ -6,6 +6,7 @@ def report(movie, movie_data_dict, movie_timedata):
     # Create a dictionary for each minute where there exists a record.
     # Also create dictionaries for specific intervals to measure.
     minute_report = dict()
+    last_minute = ''
     pre_bets = {
         '£3': 0,
         '£4': 0,
@@ -24,7 +25,7 @@ def report(movie, movie_data_dict, movie_timedata):
             else:
                 curr_time_min = str(int(curr_time) - 1870)
 
-            if curr_time_min not in minute_report:
+            if curr_time_min not in minute_report and last_minute == '':
                 minute_report[curr_time_min] = {
                     '£3': 0,
                     '£4': 0,
@@ -33,6 +34,9 @@ def report(movie, movie_data_dict, movie_timedata):
                     'Special': 0,
                     'Total': 0
                 }
+            else:
+            	minute_report[curr_time_min] = dict(minute_report[last_minute])
+
 
             if curr_ticket.split(' ')[0] == 'Added':
                 minute_report[curr_time_min][curr_ticket.split(' ')[1]] += 1
@@ -42,6 +46,9 @@ def report(movie, movie_data_dict, movie_timedata):
                 minute_report[curr_time_min]['Total'] -= 1
         except IndexError:
             break
+
+        last_minute = curr_time_min
+
     for key in minute_report:
         if int(key) < 31:
             pre_bets['£3'] = minute_report[key]['£3']
