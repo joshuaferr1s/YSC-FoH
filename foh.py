@@ -35,8 +35,7 @@ def report(movie, movie_data_dict, movie_timedata):
                     'Total': 0
                 }
             else:
-            	minute_report[curr_time_min] = dict(minute_report[last_minute])
-
+                minute_report[curr_time_min] = dict(minute_report[last_minute])
 
             if curr_ticket.split(' ')[0] == 'Added':
                 minute_report[curr_time_min][curr_ticket.split(' ')[1]] += 1
