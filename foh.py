@@ -39,11 +39,15 @@ def report(movie, movie_data_dict, movie_timedata):
                 minute_report[curr_time_min] = dict(minute_report[last_minute])
 
             if curr_ticket.split(' ')[0] == 'Added':
-                minute_report[curr_time_min][curr_ticket.split(' ')[1]] = int(minute_report[curr_time_min][curr_ticket.split(' ')[1]]) + 1
-                minute_report[curr_time_min]['Total'] = int(minute_report[curr_time_min]['Total']) + 1
+                minute_report[curr_time_min][curr_ticket.split(' ')[1]] = int(
+                    minute_report[curr_time_min][curr_ticket.split(' ')[1]]) + 1
+                minute_report[curr_time_min]['Total'] = int(
+                    minute_report[curr_time_min]['Total']) + 1
             else:
-                minute_report[curr_time_min][curr_ticket.split(' ')[1]] = int(minute_report[curr_time_min][curr_ticket.split(' ')[1]]) - 1
-                minute_report[curr_time_min]['Total'] = int(minute_report[curr_time_min]['Total']) - 1
+                minute_report[curr_time_min][curr_ticket.split(' ')[1]] = int(
+                    minute_report[curr_time_min][curr_ticket.split(' ')[1]]) - 1
+                minute_report[curr_time_min]['Total'] = int(
+                    minute_report[curr_time_min]['Total']) - 1
         except IndexError:
             break
 
@@ -101,7 +105,7 @@ def report(movie, movie_data_dict, movie_timedata):
         input("Press Enter to continue...")
     except SyntaxError:
         pass
-    write_movie_dict('movies/'+movie+'_minutereport.json', minute_report)
+    write_movie_dict('movies/' + movie + '_minutereport.json', minute_report)
     export_timedata(movie, minute_report, movie_data_dict)
 
 
