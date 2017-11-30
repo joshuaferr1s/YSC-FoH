@@ -1,5 +1,6 @@
 from time import localtime, strftime
 from file_helpers import *
+from spreading import *
 
 
 def report(movie, movie_data_dict, movie_timedata):
@@ -27,22 +28,22 @@ def report(movie, movie_data_dict, movie_timedata):
 
             if curr_time_min not in minute_report and last_minute == '':
                 minute_report[curr_time_min] = {
-                    '£3': 0,
-                    '£4': 0,
-                    'Free': 0,
-                    'Half-Price': 0,
-                    'Special': 0,
-                    'Total': 0
+                    '£3': '0',
+                    '£4': '0',
+                    'Free': '0',
+                    'Half-Price': '0',
+                    'Special': '0',
+                    'Total': '0'
                 }
             else:
                 minute_report[curr_time_min] = dict(minute_report[last_minute])
 
             if curr_ticket.split(' ')[0] == 'Added':
-                minute_report[curr_time_min][curr_ticket.split(' ')[1]] += 1
-                minute_report[curr_time_min]['Total'] += 1
+                minute_report[curr_time_min][curr_ticket.split(' ')[1]] = int(minute_report[curr_time_min][curr_ticket.split(' ')[1]]) + 1
+                minute_report[curr_time_min]['Total'] = int(minute_report[curr_time_min]['Total']) + 1
             else:
-                minute_report[curr_time_min][curr_ticket.split(' ')[1]] -= 1
-                minute_report[curr_time_min]['Total'] -= 1
+                minute_report[curr_time_min][curr_ticket.split(' ')[1]] = int(minute_report[curr_time_min][curr_ticket.split(' ')[1]]) - 1
+                minute_report[curr_time_min]['Total'] = int(minute_report[curr_time_min]['Total']) - 1
         except IndexError:
             break
 
@@ -92,7 +93,7 @@ def report(movie, movie_data_dict, movie_timedata):
     append_to_file(report_data_path, dividor)
     append_to_file(report_data_path, 'Each minute:')
     for key in minute_report:
-        append_to_file(report_data_path, key + ': ' + str(minute_report[key]))
+        append_to_file(report_data_path, key + ' : ' + str(minute_report[key]))
     print(dividor)
     print(dividor)
     print('This report has been saved to ' + report_data_path)
@@ -100,6 +101,8 @@ def report(movie, movie_data_dict, movie_timedata):
         input("Press Enter to continue...")
     except SyntaxError:
         pass
+    write_movie_dict('movies/'+movie+'_minutereport.json', minute_report)
+    export_timedata(movie, minute_report, movie_data_dict)
 
 
 def record(exists, movie):
