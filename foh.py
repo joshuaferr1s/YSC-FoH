@@ -122,9 +122,9 @@ def record(exists, movie, early_sceening = False):
     	dividor = '-'*69
     	scene_splitter = '#'*69
 
-    	print(dividor)
-    	print('Movie: ' + movie)
-    	print('£3: ' + str(movie_totals['£3']) + ' | £4: ' + str(
+        print(dividor)
+        print('Movie: ' + movie)
+        print('£3: ' + str(movie_totals['£3']) + ' | £4: ' + str(
             movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free'])
               + ' | Half-Price: ' + str(movie_totals['Half-Price']) +
               ' | Special: ' + str(movie_totals['Special']) + ' | Total: ' +
