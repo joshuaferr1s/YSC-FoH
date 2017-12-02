@@ -3,129 +3,105 @@ from file_helpers import *
 from spreading import *
 
 
-def report(movie, movie_data_dict, movie_timedata):
-    '''
-    a function to collate data from a screening and produce reports, which
-    are then exported to a google spreadsheet
+def report(movie, movie_totals, movie_timedata, early_screening=False):
+    dividor = '-' * 69
 
-    '''
-
-
-    # Create a dictionary for each minute where there exists a record.
-    # Also create dictionaries for specific intervals to measure.
-    minute_report = dict()
-    last_minute = ''
-    pre_bets = {
-        '£3': 0,
-        '£4': 0,
-        'Free': 0,
-        'Half-Price': 0,
-        'Special': 0,
-        'Total': 0
-    }
-
-    for curr in movie_timedata:
-        try:
-            curr_time = curr.split('_')[0]
-            curr_ticket = curr.split('_')[1]
-            if int(curr_time) < 1900:
-                curr_time_min = str(int(curr_time) - 1830)
-            else:
-                curr_time_min = str(int(curr_time) - 1870)
-
-            if curr_time_min not in minute_report and last_minute == '':
-                minute_report[curr_time_min] = {
-                    '£3': '0',
-                    '£4': '0',
-                    'Free': '0',
-                    'Half-Price': '0',
-                    'Special': '0',
-                    'Total': '0'
-                }
-            else:
-                minute_report[curr_time_min] = dict(minute_report[last_minute])
-
-            if curr_ticket.split(' ')[0] == 'Added':
-                minute_report[curr_time_min][curr_ticket.split(' ')[1]] = int(
-                    minute_report[curr_time_min][curr_ticket.split(' ')[1]]) + 1
-                minute_report[curr_time_min]['Total'] = int(
-                    minute_report[curr_time_min]['Total']) + 1
-            else:
-                minute_report[curr_time_min][curr_ticket.split(' ')[1]] = int(
-                    minute_report[curr_time_min][curr_ticket.split(' ')[1]]) - 1
-                minute_report[curr_time_min]['Total'] = int(
-                    minute_report[curr_time_min]['Total']) - 1
-        except IndexError:
-            break
-
-        last_minute = curr_time_min
-
-    for key in minute_report:
-        if int(key) < 31:
-            pre_bets['£3'] = minute_report[key]['£3']
-            pre_bets['£4'] = minute_report[key]['£4']
-            pre_bets['Free'] = minute_report[key]['Free']
-            pre_bets['Half-Price'] = minute_report[key]['Half-Price']
-            pre_bets['Special'] = minute_report[key]['Special']
-            pre_bets['Total'] = minute_report[key]['Total']
-
-    dividor = '-' * (len('Movie: ' + movie) + 4)
+    print(dividor)
     print('Movie: ' + movie)
     print(dividor)
-    print('End of the night')
-    for key in movie_data_dict:
-        print(key + ': ' + str(movie_data_dict[key]))
+    print('End of the night:')
+    print('£3: ' + str(movie_totals['£3']) + ' | £4: ' +
+          str(movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free']) +
+          ' | Half-Price: ' + str(movie_totals['Half-Price']) +
+          ' | Special: ' + str(movie_totals['Special']) + ' | Total: ' + str(
+              movie_totals['Total']))
     print(dividor)
-    print('At 7:00')
-    for key in pre_bets:
-        print(key + ': ' + str(pre_bets[key]))
-    print(dividor)
-    try:
-        multiplier = movie_data_dict['Total'] / pre_bets['Total']
-        print('Multiplier: ' + str(multiplier))
-    except ZeroDivisionError:
-        multiplier = 'Division by zero error when calculating multiplier'
-        print(multiplier)
+    if not early_sceening:
+        pre_bets = {
+            '£3': 0,
+            '£4': 0,
+            'Free': 0,
+            'Half-Price': 0,
+            'Special': 0,
+            'Total': 0
+        }
+        for key in movie_timedata:
+            if int(key) < 31:
+                pre_bets['£3'] = movie_timedata[key]['£3']
+                pre_bets['£4'] = movie_timedata[key]['£4']
+                pre_bets['Free'] = movie_timedata[key]['Free']
+                pre_bets['Half-Price'] = movie_timedata[key]['Half-Price']
+                pre_bets['Special'] = movie_timedata[key]['Special']
+                pre_bets['Total'] = movie_timedata[key]['Total']
+        print('Before bets:')
+        print('£3: ' + str(pre_bets['£3']) + ' | £4: ' + str(pre_bets['£4']) +
+              ' | Free: ' + str(pre_bets['Free']) + ' | Half-Price: ' +
+              str(pre_bets['Half-Price']) + ' | Special: ' + str(
+                  pre_bets['Special']) + ' | Total: ' + str(pre_bets['Total']))
+        print(dividor)
+        try:
+            multiplier = int(movie_totals['Total']) / int(pre_bets['Total'])
+            print('Multiplier: ' + str(multiplier))
+        except ZeroDivisionError:
+            multiplier = 'There were no customers before 7:00 and so no multiplier.'
+            print(multiplier)
+        print(dividor)
+    print('')
+    print('Would you like to upload this data to the Google Sheet?')
+    print('* yes')
+    print('* no')
+    choice = input('> ')
 
-    report_data_path = 'movies/' + movie + '_report.txt'
-    create_file(movie + '_report.txt')
-    append_to_file(report_data_path, 'Movie: ' + movie)
-    append_to_file(report_data_path, dividor)
-    append_to_file(report_data_path, 'End of the night')
-    for key in movie_data_dict:
-        append_to_file(report_data_path,
-                       key + ': ' + str(movie_data_dict[key]))
-    append_to_file(report_data_path, dividor)
-    append_to_file(report_data_path, 'At 7:00')
-    for key in pre_bets:
-        append_to_file(report_data_path, key + ': ' + str(pre_bets[key]))
-    append_to_file(report_data_path, dividor)
-    append_to_file(report_data_path, 'Multiplier: ' + str(multiplier))
-    append_to_file(report_data_path, dividor)
-    append_to_file(report_data_path, 'Each minute:')
-    for key in minute_report:
-        append_to_file(report_data_path, key + ' : ' + str(minute_report[key]))
-    print(dividor)
-    print(dividor)
-    print('This report has been saved to ' + report_data_path)
-    try:
-        input("Press Enter to continue...")
-    except SyntaxError:
+    if choice == 'yes':
+        export_timedata(movie, movie_timedata, movie_totals)
+    else:
         pass
-    write_movie_dict('movies/' + movie + '_minutereport.json', minute_report)
-    export_timedata(movie, minute_report, movie_data_dict)
 
 
-def record(exists, movie):
-	'''
-    a function to record data from a screening, which is saved.
+def load_movie_data(movie):
+    movie_totals = dict()
+    movie_timedata = dict()
+    try:
+        movie_totals = load_movie_data_file('movies/' + movie + '.json')
+    except FileNotFoundError:
+        movie_totals = {
+            '£3': 0,
+            '£4': 0,
+            'Free': 0,
+            'Half-Price': 0,
+            'Special': 0,
+            'Total': 0
+        }
+    try:
+        movie_timedata = load_movie_data_file(
+            'movies/' + movie + '_timedata.json')
+    except FileNotFoundError:
+        pass
 
-    '''
+    return movie_totals, movie_timedata
 
+
+def warning_messages(total):
+    warnings = {
+        250: 'We are nearing full.',
+        260: 'Prepare to start warning customers.',
+        270: 'Temporarily close the doors and do a seat count.'
+    }
+    if total in warnings:
+        print('\n' * 20)
+        print(warnings[total])
+        try:
+            input('Press Enter to continue...')
+        except SyntaxError:
+            pass
+
+
+def record(exists, movie, early_sceening=False):
 
     recording = True
-    movie_data_dict = dict()
-    movie_timedata = list()
+    minute_time = '0'
+    movie_totals = dict()
+    movie_timedata = dict()
     ticket_type = {
         '3': 'Added £3',
         '3r': 'Removed £3',
@@ -140,26 +116,13 @@ def record(exists, movie):
     }
 
     if exists:
-        #Load past data
-        try:
-            movie_data_dict = load_movie_data('movies/' + movie + '.json')
-        except FileNotFoundError:
-            movie_data_dict = {
-                '£3': 0,
-                '£4': 0,
-                'Free': 0,
-                'Half-Price': 0,
-                'Special': 0,
-                'Total': 0
-            }
-        try:
-            movie_timedata = file_to_list('movies/' + movie + '_timedata.txt')
-        except FileNotFoundError:
-            pass
+        # load previous data to continue recording
+        movie_totals, movie_timedata = load_movie_data(movie)
     else:
+        # create new dictionaries for recording
         create_file(movie + '.json')
-        create_file(movie + '_timedata.txt')
-        movie_data_dict = {
+        create_file(movie + '_timedata.json')
+        movie_totals = {
             '£3': 0,
             '£4': 0,
             'Free': 0,
@@ -169,40 +132,20 @@ def record(exists, movie):
         }
 
     while recording:
-        # Capacity Check
-        capacity_messages = {
-            250: 'We are very close to Capacity!',
-            260: 'We are very very very close to Capacity!',
-            270: 'Temporarily Close The Doors!'
-        }
-        if movie_data_dict['Total'] in capacity_messages:
-            print('\n' * 20)
-            print(capacity_messages[movie_data_dict['Total']])
-            try:
-                input('Press Enter to continue...')
-            except SyntaxError:
-                pass
-        # Counter
-        dividor = '-' * (len('£3: ' + str(movie_data_dict['£3']) + ' | £4: ' +
-                             str(movie_data_dict['£4']) + ' | Free: ' + str(
-                                 movie_data_dict['Free']) + ' | Half-Price: ' +
-                             str(movie_data_dict['Half-Price']) +
-                             ' | Total: ' + str(movie_data_dict['Total'])))
-        scene_splitter = '#' * (
-            len('£3: ' + str(movie_data_dict['£3']) + ' | £4: ' +
-                str(movie_data_dict['£4']) + ' | Free: ' +
-                str(movie_data_dict['Free']) + ' | Half-Price: ' + str(
-                    movie_data_dict['Half-Price']) + ' | Total: ' + str(
-                        movie_data_dict['Total'])))
+
+        warning_messages(movie_totals['Total'])
+        dividor = '-' * 69
+        scene_splitter = '#' * 69
+
         print(dividor)
         print('Movie: ' + movie)
-        print('£3: ' + str(movie_data_dict['£3']) + ' | £4: ' + str(
-            movie_data_dict['£4']) + ' | Free: ' + str(movie_data_dict['Free'])
-              + ' | Half-Price: ' + str(movie_data_dict['Half-Price']) +
-              ' | Special: ' + str(movie_data_dict['Special']) + ' | Total: ' +
-              str(movie_data_dict['Total']))
+        print('£3: ' + str(movie_totals['£3']) + ' | £4: ' + str(
+            movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free']) +
+              ' | Half-Price: ' + str(movie_totals['Half-Price']) +
+              ' | Special: ' + str(movie_totals['Special']) + ' | Total: ' +
+              str(movie_totals['Total']))
         print(dividor)
-        print('Recording Mode')
+        print('Recording Mode:')
         print('(3) £3')
         print('(4) £4')
         print('(f) Free')
@@ -210,34 +153,66 @@ def record(exists, movie):
         print('(s) Special')
         print('To remove x, type xr.')
         print('* stop')
-        change = input('> ')
+        ticket = input('> ')
+
         print(scene_splitter)
         print(scene_splitter)
+        time_now = strftime("%H%M", localtime())
+        last_time = ''
 
-        date_time_now = strftime("%H%M", localtime())
-
-        if change == 'stop':
+        if ticket == 'stop':
             recording = False
-        elif change in ticket_type:
-            if ticket_type[change].split(' ')[0] == 'Added':
-                movie_data_dict['Total'] += 1
-                movie_data_dict[ticket_type[change].split(' ')[1]] += 1
-                print(ticket_type[change])
-            else:
-                if movie_data_dict[ticket_type[change].split(' ')[1]] > 0:
-                    movie_data_dict[ticket_type[change].split(' ')[1]] -= 1
-                    movie_data_dict['Total'] -= 1
-                    print(ticket_type[change])
+        elif ticket in ticket_type:
+            if early_sceening:
+                if int(time_now) < 1800:
+                    minute_time = str(int(time_now) - 1790)
                 else:
-                    print('There are no customers that bought a ' +
-                          ticket_type[change].split(' ')[1] + ' ticket.')
-            movie_timedata.append(date_time_now + '_' + ticket_type[change])
-        else:
-            print('Invalid Input.')
+                    minute_time = str(int(time_now) - 1830)
+            else:
+                if int(time_now) < 1900:
+                    minute_time = str(int(time_now) - 1830)
+                else:
+                    minute_time = str(int(time_now) - 1870)
 
-    write_movie_dict('movies/' + movie + '.json', movie_data_dict)
-    write_file('movies/' + movie + '_timedata.txt', movie_timedata)
-    return movie_data_dict, movie_timedata
+            if time_now not in movie_timedata and last_time == '':
+                movie_timedata[minute_time] = {
+                    '£3': 0,
+                    '£4': 0,
+                    'Free': 0,
+                    'Half-Price': 0,
+                    'Special': 0,
+                    'Total': 0
+                }
+            elif time_now not in movie_timedata and last_time != '':
+                movie_timedata[minute_time] = movie_timedata[last_time]
+
+            if ticket_type[ticket].split(' ')[0] == 'Added':
+                movie_totals['Total'] += 1
+                movie_timedata[minute_time]['Total'] += 1
+                movie_totals[ticket_type[ticket].split(' ')[1]] += 1
+                movie_timedata[minute_time][ticket_type[ticket].split(' ')[
+                    1]] += 1
+                print(time_now + ' -- ' + ticket_type[ticket])
+            else:
+                if movie_totals[ticket_type[ticket].split(' ')[1]] > 0:
+                    movie_totals['Total'] -= 1
+                    movie_timedata[minute_time]['Total'] -= 1
+                    movie_totals[ticket_type[ticket].split(' ')[1]] -= 1
+                    movie_timedata[minute_time][ticket_type[ticket].split(' ')[
+                        1]] -= 1
+                    print(time_now + ' -- ' + ticket_type[ticket])
+                else:
+                    print('There are no customers who have bought a ' +
+                          ticket_type[ticket].split(' ')[1] + ' ticket.')
+            last_time = time_now
+
+        else:
+            print('Invalid input: ' + ticket + '.')
+
+    write_movie_dict('movies/' + movie + '.json', movie_totals)
+    write_movie_dict('movies/' + movie + '_timedata.json', movie_timedata)
+
+    return movie_totals, movie_timedata
 
 
 # Initialization
@@ -246,61 +221,76 @@ create_movies_dir()
 
 # Main Loop
 while running:
-    movie_data_dict = dict()
+    movie_total = dict()
     movies_recorded = rem_dups(get_files('movies/'))
+    early_sceening = False
+
     print('')
     print('YSC Front of House')
     print('* record')
     if len(movies_recorded) > 0:
         print('* report')
     print('* quit')
-    choice = input('> ')
-    if choice == 'record':
-        if len(movies_recorded) > 0:
-            print('Movies already Recorded:')
-            for i in movies_recorded:
-                print('* ' + i)
+    choice = input('> ').lower()
+
+    if choice == 'quit':
+        running = False
+    elif choice == 'record':
         print('What movie would you like to record?')
         movie = input('> ')
-        if movie in movies_recorded:
-            print('Loading previous data.')
-            movie_data_dict, movie_timedata = record(True, movie)
+        print('Is this an early screening?')
+        print('* y')
+        print('* n')
+        early_sceening_in = input('> ')
+
+        if early_sceening_in == 'y':
+            early_sceening = True
         else:
-            movie_data_dict, movie_timedata = record(False, movie)
-        print('Would you like to make a report of the screening?')
+            early_sceening = False
+
+        if movie in movies_recorded:
+            print('Loading previous movie data...')
+            movie_total, movie_timedata = record(True, movie, early_sceening)
+        else:
+            movie_total, movie_timedata = record(False, movie, early_sceening)
+
+        print('Would you like to compile a report of this screening?')
         print('* yes')
         print('* no')
-        selection = input('> ')
-        if selection == 'yes':
-            report(movie, movie_data_dict, movie_timedata)
-        elif selection == 'no':
+        report_choice = input('> ')
+
+        if report_choice == 'yes':
+            report(movie, movie_total, movie_timedata, early_sceening)
+        elif report_choice == 'no':
             pass
         else:
-            print('Invalid Input.')
-    elif choice == 'report' and len(movies_recorded) > 0:
-        print('Movies already Recorded:')
-        running_sub = True
-        while running_sub:
-            for i in movies_recorded:
-                print('* ' + i)
-            print('For which movie would you like to make a report?')
-            movie = input('> ')
-            if movie in movies_recorded:
-                print('Loading previous data.')
-                movie_data_dict = load_movie_data('movies/' + movie + '.json')
-                movie_timedata = file_to_list(
-                    'movies/' + movie + '_timedata.txt')
-                report(movie, movie_data_dict, movie_timedata)
-                running_sub = False
+            print('Invalid input: ' + report + '.')
 
-            elif movie == 'quit':
-                running_sub = False
-            else:
-                print('You must select a movie with pre-existing data.')
-    elif choice == 'quit':
-        running = False
+    elif choice == 'report' and len(movies_recorded) > 0:
+        print('Movies in the database:')
+        for i in movies_recorded:
+            print('* ' + i)
+        print('Which movie would you like to compile a report for?')
+        movie = input('> ')
+
+        print('Was this an early screening?')
+        print('* yes')
+        print('* no')
+        early_sceening_in = input('> ')
+
+        if early_sceening_in == 'yes':
+            early_screening = True
+        else:
+            early_screening = False
+
+        if movie in movies_recorded:
+            movie_total, movie_timedata = load_movie_data(movie)
+            report(movie, movie_total, movie_timedata, early_sceening)
+        else:
+            pass
+
     else:
-        print('Invalid Input.')
+        print('Invalid input: ' + choice + '.')
         try:
             input("Press Enter to continue...")
         except SyntaxError:
