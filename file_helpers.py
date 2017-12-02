@@ -29,7 +29,7 @@ def write_file(path, data):
 
 def write_movie_dict(path, data):
     with open(path, 'w') as f:
-        json.dump(data, f)
+        json.dump(data, f, indent=4)
 
 
 def create_file(path):
