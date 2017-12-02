@@ -4,6 +4,13 @@ from spreading import *
 
 
 def report(movie, movie_data_dict, movie_timedata):
+    '''
+    a function to collate data from a screening and produce reports, which
+    are then exported to a google spreadsheet
+
+    '''
+
+
     # Create a dictionary for each minute where there exists a record.
     # Also create dictionaries for specific intervals to measure.
     minute_report = dict()
@@ -110,6 +117,12 @@ def report(movie, movie_data_dict, movie_timedata):
 
 
 def record(exists, movie):
+	'''
+    a function to record data from a screening, which is saved.
+
+    '''
+
+
     recording = True
     movie_data_dict = dict()
     movie_timedata = list()

@@ -11,11 +11,10 @@ def export_timedata(movie, movie_timedata, finals):
     creds = ServiceAccountCredentials.from_json_keyfile_name(
         'client_secret.json', scope)
     client = gspread.authorize(creds)
-
-    # Find a workbook by name and open the first sheet
-    # Make sure you use the right name here.
-    sheet = client.open("YSC-foh").sheet1
+    
+    # open required spreadhseet and worksheet
     spreadsheet = client.open('YSC-foh')
+    sheet = client.open("YSC-foh").worksheet('Membership')
     headers = ['Times', '£3', '£4', 'Free', 'Half-Price', 'Special', 'Total']
     worksheets = spreadsheet.worksheets()
     worksheets_names = list()
