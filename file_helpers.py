@@ -1,7 +1,7 @@
 import os, json
 
 
-def load_movie_data(file_name):
+def load_movie_data_file(file_name):
     dict_from_file = {}
     with open(file_name, 'r') as inf:
         dict_from_file = json.load(inf)
