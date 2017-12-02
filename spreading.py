@@ -11,7 +11,7 @@ def export_timedata(movie, movie_timedata, finals):
     creds = ServiceAccountCredentials.from_json_keyfile_name(
         'client_secret.json', scope)
     client = gspread.authorize(creds)
-    
+
     # open required spreadhseet and worksheet
     spreadsheet = client.open('YSC-foh')
     sheet = client.open("YSC-foh").worksheet('Membership')
