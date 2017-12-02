@@ -163,6 +163,17 @@ def record(exists, movie, early_sceening=False):
         if ticket == 'stop':
             recording = False
         elif ticket in ticket_type:
+            if early_sceening:
+                if int(time_now) < 1800:
+                    minute_time = str(int(time_now) - 1790)
+                else:
+                    minute_time = str(int(time_now) - 1830)
+            else:
+                if int(time_now) < 1900:
+                    minute_time = str(int(time_now) - 1830)
+                else:
+                    minute_time = str(int(time_now) - 1870)
+
             if time_now not in movie_timedata and last_time == '':
                 movie_timedata[minute_time] = {
                     '£3': 0,
@@ -174,17 +185,6 @@ def record(exists, movie, early_sceening=False):
                 }
             elif time_now not in movie_timedata and last_time != '':
                 movie_timedata[minute_time] = movie_timedata[last_time]
-
-            if early_sceening:
-                if time_now < 1800:
-                    minute_time = str(int(time_now) - 1790)
-                else:
-                    minute_time = str(int(time_now) - 1830)
-            else:
-                if time_now < 1900:
-                    minute_time = str(int(time_now) - 1830)
-                else:
-                    minute_time = str(int(time_now) - 1870)
 
             if ticket_type[ticket].split(' ')[0] == 'Added':
                 movie_totals['Total'] += 1
