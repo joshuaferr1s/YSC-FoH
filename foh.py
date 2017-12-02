@@ -3,18 +3,18 @@ from file_helpers import *
 from spreading import *
 
 
-def report(movie, movie_totals, movie_timedata, early_screening = False):
-    dividor = '-'*69
+def report(movie, movie_totals, movie_timedata, early_screening=False):
+    dividor = '-' * 69
 
     print(dividor)
     print('Movie: ' + movie)
     print(dividor)
     print('End of the night:')
-    print('£3: ' + str(movie_totals['£3']) + ' | £4: ' + str(
-            movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free'])
-              + ' | Half-Price: ' + str(movie_totals['Half-Price']) +
-              ' | Special: ' + str(movie_totals['Special']) + ' | Total: ' +
-              str(movie_totals['Total']))
+    print('£3: ' + str(movie_totals['£3']) + ' | £4: ' +
+          str(movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free']) +
+          ' | Half-Price: ' + str(movie_totals['Half-Price']) +
+          ' | Special: ' + str(movie_totals['Special']) + ' | Total: ' + str(
+              movie_totals['Total']))
     print(dividor)
     if not early_sceening:
         pre_bets = {
@@ -34,11 +34,10 @@ def report(movie, movie_totals, movie_timedata, early_screening = False):
                 pre_bets['Special'] = movie_timedata[key]['Special']
                 pre_bets['Total'] = movie_timedata[key]['Total']
         print('Before bets:')
-        print('£3: ' + str(pre_bets['£3']) + ' | £4: ' + str(
-            pre_bets['£4']) + ' | Free: ' + str(pre_bets['Free'])
-              + ' | Half-Price: ' + str(pre_bets['Half-Price']) +
-              ' | Special: ' + str(pre_bets['Special']) + ' | Total: ' +
-              str(pre_bets['Total']))
+        print('£3: ' + str(pre_bets['£3']) + ' | £4: ' + str(pre_bets['£4']) +
+              ' | Free: ' + str(pre_bets['Free']) + ' | Half-Price: ' +
+              str(pre_bets['Half-Price']) + ' | Special: ' + str(
+                  pre_bets['Special']) + ' | Total: ' + str(pre_bets['Total']))
         print(dividor)
         try:
             multiplier = int(movie_totals['Total']) / int(pre_bets['Total'])
@@ -58,6 +57,7 @@ def report(movie, movie_totals, movie_timedata, early_screening = False):
     else:
         pass
 
+
 def load_movie_data(movie):
     movie_totals = dict()
     movie_timedata = dict()
@@ -73,27 +73,30 @@ def load_movie_data(movie):
             'Total': 0
         }
     try:
-        movie_timedata = load_movie_data_file('movies/' + movie + '_timedata.json')
+        movie_timedata = load_movie_data_file(
+            'movies/' + movie + '_timedata.json')
     except FileNotFoundError:
         pass
 
     return movie_totals, movie_timedata
 
+
 def warning_messages(total):
     warnings = {
-        250 : 'We are nearing full.',
-        260 : 'Prepare to start warning customers.',
-        270 : 'Temporarily close the doors and do a seat count.'
+        250: 'We are nearing full.',
+        260: 'Prepare to start warning customers.',
+        270: 'Temporarily close the doors and do a seat count.'
     }
     if total in warnings:
-            print('\n' * 20)
-            print(warnings[total])
-            try:
-                input('Press Enter to continue...')
-            except SyntaxError:
-                pass
+        print('\n' * 20)
+        print(warnings[total])
+        try:
+            input('Press Enter to continue...')
+        except SyntaxError:
+            pass
 
-def record(exists, movie, early_sceening = False):
+
+def record(exists, movie, early_sceening=False):
 
     recording = True
     minute_time = '0'
@@ -111,7 +114,7 @@ def record(exists, movie, early_sceening = False):
         's': 'Added Special',
         'sr': 'Removed Special'
     }
-    
+
     if exists:
         # load previous data to continue recording
         movie_totals, movie_timedata = load_movie_data(movie)
@@ -131,14 +134,14 @@ def record(exists, movie, early_sceening = False):
     while recording:
 
         warning_messages(movie_totals['Total'])
-        dividor = '-'*69
-        scene_splitter = '#'*69
+        dividor = '-' * 69
+        scene_splitter = '#' * 69
 
         print(dividor)
         print('Movie: ' + movie)
         print('£3: ' + str(movie_totals['£3']) + ' | £4: ' + str(
-            movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free'])
-              + ' | Half-Price: ' + str(movie_totals['Half-Price']) +
+            movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free']) +
+              ' | Half-Price: ' + str(movie_totals['Half-Price']) +
               ' | Special: ' + str(movie_totals['Special']) + ' | Total: ' +
               str(movie_totals['Total']))
         print(dividor)
@@ -187,23 +190,25 @@ def record(exists, movie, early_sceening = False):
                 movie_totals['Total'] += 1
                 movie_timedata[minute_time]['Total'] += 1
                 movie_totals[ticket_type[ticket].split(' ')[1]] += 1
-                movie_timedata[minute_time][ticket_type[ticket].split(' ')[1]] += 1
+                movie_timedata[minute_time][ticket_type[ticket].split(' ')[
+                    1]] += 1
                 print(time_now + ' -- ' + ticket_type[ticket])
             else:
                 if movie_totals[ticket_type[ticket].split(' ')[1]] > 0:
                     movie_totals['Total'] -= 1
                     movie_timedata[minute_time]['Total'] -= 1
                     movie_totals[ticket_type[ticket].split(' ')[1]] -= 1
-                    movie_timedata[minute_time][ticket_type[ticket].split(' ')[1]] -= 1
+                    movie_timedata[minute_time][ticket_type[ticket].split(' ')[
+                        1]] -= 1
                     print(time_now + ' -- ' + ticket_type[ticket])
                 else:
                     print('There are no customers who have bought a ' +
-                        ticket_type[ticket].split(' ')[1] + ' ticket.')
+                          ticket_type[ticket].split(' ')[1] + ' ticket.')
             last_time = time_now
 
         else:
             print('Invalid input: ' + ticket + '.')
-        
+
     write_movie_dict('movies/' + movie + '.json', movie_totals)
     write_movie_dict('movies/' + movie + '_timedata.json', movie_timedata)
 
