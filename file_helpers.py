@@ -8,14 +8,6 @@ def load_movie_data_file(file_name):
     return dict_from_file
 
 
-def file_to_list(file_name):
-    results = list()
-    with open(file_name, 'rt') as f:
-        for line in f:
-            results.append(line.replace('\n', ''))
-    return results
-
-
 def create_movies_dir():
     if not os.path.exists('movies'):
         os.makedirs('movies')
@@ -35,15 +27,6 @@ def write_movie_dict(path, data):
 def create_file(path):
     write_file('movies/' + path, '')
     return True
-
-
-def append_to_file(path, data):
-    with open(path, 'a') as file:
-        file.write(str(data) + '\n')
-
-
-def delete_file_contents(path):
-    open(path, 'w').close()
 
 
 def get_files(path):
