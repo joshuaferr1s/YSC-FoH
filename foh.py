@@ -27,12 +27,12 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
         }
         for key in movie_timedata:
             if int(key) < 31:
-                pre_bets['£3'] = movie_timedata[key]['£3']
-                pre_bets['£4'] = movie_timedata[key]['£4']
-                pre_bets['Free'] = movie_timedata[key]['Free']
-                pre_bets['Half-Price'] = movie_timedata[key]['Half-Price']
-                pre_bets['Special'] = movie_timedata[key]['Special']
-                pre_bets['Total'] = movie_timedata[key]['Total']
+                pre_bets['£3'] += movie_timedata[key]['£3']
+                pre_bets['£4'] += movie_timedata[key]['£4']
+                pre_bets['Free'] += movie_timedata[key]['Free']
+                pre_bets['Half-Price'] += movie_timedata[key]['Half-Price']
+                pre_bets['Special'] += movie_timedata[key]['Special']
+                pre_bets['Total'] += movie_timedata[key]['Total']
         print('Before bets:')
         print('£3: ' + str(pre_bets['£3']) + ' | £4: ' + str(pre_bets['£4']) +
               ' | Free: ' + str(pre_bets['Free']) + ' | Half-Price: ' +
@@ -174,7 +174,7 @@ def record(exists, movie, early_sceening=False):
                 else:
                     minute_time = str(int(time_now) - 1870)
 
-            if time_now not in movie_timedata and last_time == '':
+            if minute_time not in movie_timedata and last_time == '':
                 movie_timedata[minute_time] = {
                     '£3': 0,
                     '£4': 0,
@@ -183,7 +183,7 @@ def record(exists, movie, early_sceening=False):
                     'Special': 0,
                     'Total': 0
                 }
-            elif time_now not in movie_timedata and last_time != '':
+            elif minute_time not in movie_timedata and last_time != '':
                 movie_timedata[minute_time] = movie_timedata[last_time]
 
             if ticket_type[ticket].split(' ')[0] == 'Added':
@@ -204,7 +204,7 @@ def record(exists, movie, early_sceening=False):
                 else:
                     print('There are no customers who have bought a ' +
                           ticket_type[ticket].split(' ')[1] + ' ticket.')
-            last_time = time_now
+            last_time = minute_time
 
         else:
             print('Invalid input: ' + ticket + '.')
@@ -236,6 +236,8 @@ while running:
     if choice == 'quit':
         running = False
     elif choice == 'record':
+        for i in movies_recorded:
+            print('* ' + i)
         print('What movie would you like to record?')
         movie = input('> ')
         print('Is this an early screening?')

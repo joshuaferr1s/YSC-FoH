@@ -31,19 +31,13 @@ def create_file(path):
 
 def get_files(path):
     rawest_files = os.listdir(path)
-    rawish_files = list()
     raw_files = list()
-    not_raw_files = list()
     result = list()
     if len(rawest_files) > 0:
         for _ in rawest_files:
-            rawish_files.append(_.replace('.txt', ''))
-        for _ in rawish_files:
             raw_files.append(_.replace('.json', ''))
         for _ in raw_files:
-            not_raw_files.append(_.replace('_timedata', ''))
-        for _ in not_raw_files:
-            result.append(_.replace('_report', ''))
+            result.append(_.replace('_timedata', ''))
         try:
             result.remove('.DS_Store')
         except ValueError:
