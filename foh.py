@@ -4,7 +4,7 @@ from spreading import *
 
 
 def report(movie, movie_totals, movie_timedata, early_screening=False):
-    dividor = '-' * 69
+    global dividor
 
     print(dividor)
     print('Movie: ' + movie)
@@ -27,12 +27,12 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
         }
         for key in movie_timedata:
             if int(key) < 31:
-                pre_bets['£3'] = movie_timedata[key]['£3']
-                pre_bets['£4'] = movie_timedata[key]['£4']
-                pre_bets['Free'] = movie_timedata[key]['Free']
-                pre_bets['Half-Price'] = movie_timedata[key]['Half-Price']
-                pre_bets['Special'] = movie_timedata[key]['Special']
-                pre_bets['Total'] = movie_timedata[key]['Total']
+                pre_bets['£3'] += movie_timedata[key]['£3']
+                pre_bets['£4'] += movie_timedata[key]['£4']
+                pre_bets['Free'] += movie_timedata[key]['Free']
+                pre_bets['Half-Price'] += movie_timedata[key]['Half-Price']
+                pre_bets['Special'] += movie_timedata[key]['Special']
+                pre_bets['Total'] += movie_timedata[key]['Total']
         print('Before bets:')
         print('£3: ' + str(pre_bets['£3']) + ' | £4: ' + str(pre_bets['£4']) +
               ' | Free: ' + str(pre_bets['Free']) + ' | Half-Price: ' +
@@ -58,29 +58,6 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
         pass
 
 
-def load_movie_data(movie):
-    movie_totals = dict()
-    movie_timedata = dict()
-    try:
-        movie_totals = load_movie_data_file('movies/' + movie + '.json')
-    except FileNotFoundError:
-        movie_totals = {
-            '£3': 0,
-            '£4': 0,
-            'Free': 0,
-            'Half-Price': 0,
-            'Special': 0,
-            'Total': 0
-        }
-    try:
-        movie_timedata = load_movie_data_file(
-            'movies/' + movie + '_timedata.json')
-    except FileNotFoundError:
-        pass
-
-    return movie_totals, movie_timedata
-
-
 def warning_messages(total):
     warnings = {
         250: 'We are nearing full.',
@@ -100,6 +77,7 @@ def record(exists, movie, early_sceening=False):
 
     recording = True
     minute_time = '0'
+    global movie_data
     movie_totals = dict()
     movie_timedata = dict()
     ticket_type = {
@@ -117,11 +95,12 @@ def record(exists, movie, early_sceening=False):
 
     if exists:
         # load previous data to continue recording
-        movie_totals, movie_timedata = load_movie_data(movie)
+        movie_totals = movie_data[movie]['final']
+        movie_timedata = movie_data[movie]['timedata']
     else:
-        # create new dictionaries for recording
-        create_file(movie + '.json')
-        create_file(movie + '_timedata.json')
+        movie_data[movie] = dict()
+        movie_data[movie]['final'] = dict()
+        movie_data[movie]['timedata'] = dict()
         movie_totals = {
             '£3': 0,
             '£4': 0,
@@ -174,7 +153,7 @@ def record(exists, movie, early_sceening=False):
                 else:
                     minute_time = str(int(time_now) - 1870)
 
-            if time_now not in movie_timedata and last_time == '':
+            if minute_time not in movie_timedata and last_time == '':
                 movie_timedata[minute_time] = {
                     '£3': 0,
                     '£4': 0,
@@ -183,7 +162,7 @@ def record(exists, movie, early_sceening=False):
                     'Special': 0,
                     'Total': 0
                 }
-            elif time_now not in movie_timedata and last_time != '':
+            elif minute_time not in movie_timedata and last_time != '':
                 movie_timedata[minute_time] = movie_timedata[last_time]
 
             if ticket_type[ticket].split(' ')[0] == 'Added':
@@ -204,25 +183,30 @@ def record(exists, movie, early_sceening=False):
                 else:
                     print('There are no customers who have bought a ' +
                           ticket_type[ticket].split(' ')[1] + ' ticket.')
-            last_time = time_now
+            last_time = minute_time
 
         else:
             print('Invalid input: ' + ticket + '.')
 
-    write_movie_dict('movies/' + movie + '.json', movie_totals)
-    write_movie_dict('movies/' + movie + '_timedata.json', movie_timedata)
+    movie_data[movie]['final'] = movie_totals
+    movie_data[movie]['timedata'] = movie_timedata
+    write_movie_dict('movie_database.json', movie_data)
 
     return movie_totals, movie_timedata
 
 
 # Initialization
 running = True
-create_movies_dir()
+dividor = '-' * 69
 
 # Main Loop
 while running:
+    try:
+        movie_data = load_movie_data_file('movie_database.json')
+    except:
+        movie_data = dict()
     movie_total = dict()
-    movies_recorded = rem_dups(get_files('movies/'))
+    movies_recorded = rem_dups(get_files(movie_data))
     early_sceening = False
 
     print('')
@@ -236,6 +220,10 @@ while running:
     if choice == 'quit':
         running = False
     elif choice == 'record':
+        print(dividor)
+        for i in movies_recorded:
+            print('* ' + i)
+        print(dividor)
         print('What movie would you like to record?')
         movie = input('> ')
         print('Is this an early screening?')
@@ -270,6 +258,7 @@ while running:
         print('Movies in the database:')
         for i in movies_recorded:
             print('* ' + i)
+        print(dividor)
         print('Which movie would you like to compile a report for?')
         movie = input('> ')
 
@@ -284,7 +273,8 @@ while running:
             early_screening = False
 
         if movie in movies_recorded:
-            movie_total, movie_timedata = load_movie_data(movie)
+            movie_totals = movie_data[movie]['final']
+            movie_timedata = movie_data[movie]['timedata']
             report(movie, movie_total, movie_timedata, early_sceening)
         else:
             pass
