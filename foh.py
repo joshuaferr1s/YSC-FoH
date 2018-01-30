@@ -201,7 +201,10 @@ dividor = '-' * 69
 
 # Main Loop
 while running:
-    movie_data = load_movie_data_file('movie_database.json')
+    try:
+        movie_data = load_movie_data_file('movie_database.json')
+    except:
+        movie_data = dict()
     movie_total = dict()
     movies_recorded = rem_dups(get_files(movie_data))
     early_sceening = False
