@@ -73,7 +73,6 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
     print('Movie: ' + movie)
     print(dividor)
     print('End of the night:')
-    print(movie_totals)
     print('£3: ' + str(movie_totals['£3']) + ' | £4: ' +
           str(movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free']) +
           ' | Half-Price: ' + str(movie_totals['Half-Price']) +
