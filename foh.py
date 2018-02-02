@@ -16,7 +16,7 @@ def export_timedata(movie, movie_timedata, finals):
 
     # open required spreadhseet and worksheet
     spreadsheet = client.open('YSC-foh')
-    sheet = client.open("YSC-foh").worksheet('Membership')
+    sheet = client.open("YSC-foh").worksheet('Spr-Membership')
     headers = ['Times', '£3', '£4', 'Free', 'Half-Price', 'Special', 'Total']
     worksheets = spreadsheet.worksheets()
     worksheets_names = list()
@@ -73,6 +73,7 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
     print('Movie: ' + movie)
     print(dividor)
     print('End of the night:')
+    print(movie_totals)
     print('£3: ' + str(movie_totals['£3']) + ' | £4: ' +
           str(movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free']) +
           ' | Half-Price: ' + str(movie_totals['Half-Price']) +
@@ -213,8 +214,10 @@ def record(exists, movie, early_sceening=False):
             else:
                 if int(time_now) < 1900:
                     minute_time = str(int(time_now) - 1830)
-                else:
+                elif int(time_now) >= 1900 and int(time_now) < 2000:
                     minute_time = str(int(time_now) - 1870)
+                else:
+                    minute_time = str(int(time_now) - 1910)
 
             if minute_time not in movie_timedata and last_time == '':
                 movie_timedata[minute_time] = {
@@ -338,7 +341,7 @@ while running:
         if movie in movies_recorded:
             movie_totals = movie_data[movie]['final']
             movie_timedata = movie_data[movie]['timedata']
-            report(movie, movie_total, movie_timedata, early_sceening)
+            report(movie, movie_totals, movie_timedata, early_sceening)
         else:
             pass
 
