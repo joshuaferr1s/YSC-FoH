@@ -4,6 +4,24 @@ from file_helpers import *
 from oauth2client.service_account import ServiceAccountCredentials
 
 
+def existing_movies(movies_recorded):
+    print(dividor)
+    for i in movies_recorded:
+        print('* ' + i)
+    print(dividor)
+
+
+def format_report(d):
+    output_text = ""
+    for i in d:
+        if output_text != "":
+            output_text += " | "
+        else:
+            pass
+        output_text = output_text + str(i) + ": " + str(d[i])
+    print(output_text)
+
+
 def export_timedata(movie, movie_timedata, finals):
     # use creds to create a client to interact with the Google Drive API
     scope = [
@@ -73,11 +91,7 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
     print('Movie: ' + movie)
     print(dividor)
     print('End of the night:')
-    print('£3: ' + str(movie_totals['£3']) + ' | £4: ' +
-          str(movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free']) +
-          ' | Half-Price: ' + str(movie_totals['Half-Price']) +
-          ' | Special: ' + str(movie_totals['Special']) + ' | Total: ' + str(
-              movie_totals['Total']))
+    format_report(movie_totals)
     print(dividor)
     if not early_sceening:
         pre_bets = {
@@ -97,10 +111,7 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
                 pre_bets['Special'] += movie_timedata[key]['Special']
                 pre_bets['Total'] += movie_timedata[key]['Total']
         print('Before bets:')
-        print('£3: ' + str(pre_bets['£3']) + ' | £4: ' + str(pre_bets['£4']) +
-              ' | Free: ' + str(pre_bets['Free']) + ' | Half-Price: ' +
-              str(pre_bets['Half-Price']) + ' | Special: ' + str(
-                  pre_bets['Special']) + ' | Total: ' + str(pre_bets['Total']))
+        format_report(pre_bets)
         print(dividor)
         try:
             multiplier = int(movie_totals['Total']) / int(pre_bets['Total'])
@@ -181,11 +192,7 @@ def record(exists, movie, early_sceening=False):
 
         print(dividor)
         print('Movie: ' + movie)
-        print('£3: ' + str(movie_totals['£3']) + ' | £4: ' + str(
-            movie_totals['£4']) + ' | Free: ' + str(movie_totals['Free']) +
-              ' | Half-Price: ' + str(movie_totals['Half-Price']) +
-              ' | Special: ' + str(movie_totals['Special']) + ' | Total: ' +
-              str(movie_totals['Total']))
+        format_report(movie_totals)
         print(dividor)
         print('Recording Mode:')
         print('(3) £3')
@@ -286,8 +293,7 @@ while running:
         running = False
     elif choice == 'record':
         print(dividor)
-        for i in movies_recorded:
-            print('* ' + i)
+        existing_movies(movies_recorded)
         print(dividor)
         print('What movie would you like to record?')
         movie = input('> ')
@@ -321,8 +327,7 @@ while running:
 
     elif choice == 'report' and len(movies_recorded) > 0:
         print('Movies in the database:')
-        for i in movies_recorded:
-            print('* ' + i)
+        existing_movies(movies_recorded)
         print(dividor)
         print('Which movie would you like to compile a report for?')
         movie = input('> ')
