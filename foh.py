@@ -59,7 +59,14 @@ def export_timedata(movie, movie_timedata, finals):
 
     # timedata
     num_of_values = len(movie_timedata)
-    cell_tops = {1:"£3",2:"£4",3:"Free",4:"Half-Price",5:"Special",6:"Total"}
+    cell_tops = {
+        1: "£3",
+        2: "£4",
+        3: "Free",
+        4: "Half-Price",
+        5: "Special",
+        6: "Total"
+    }
 
     if movie in worksheets_names:
         worksheet = spreadsheet.worksheet(movie)
@@ -77,7 +84,7 @@ def export_timedata(movie, movie_timedata, finals):
     for cell in work_cells:
         if k < 7:
             cell.value = headers[k]
-        elif k%7 == 0:
+        elif k % 7 == 0:
             cell.value = timedata_k[t_d_t]
             cur_time = timedata_k[t_d_t]
             t_d_t += 1
@@ -88,7 +95,7 @@ def export_timedata(movie, movie_timedata, finals):
                 l = 0
             else:
                 l += 1
-        k+=1
+        k += 1
 
     worksheet.update_cells(work_cells)
     print("Timedata upload complete.")
@@ -262,7 +269,9 @@ def record(exists, movie, early_sceening=False):
                         1]] -= 1
                     print("{0} -- {1}".format(time_now, ticket_type[ticket]))
                 else:
-                    print('There are no customers who have bought a {0} ticket.'.format(ticket_type[ticket].split(' ')[1]))
+                    print(
+                        'There are no customers who have bought a {0} ticket.'.
+                        format(ticket_type[ticket].split(' ')[1]))
             last_time = minute_time
 
         else:
