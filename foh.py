@@ -23,27 +23,28 @@ def format_display(d):
 
 
 def export_timedata(movie, movie_timedata, finals):
-    # use creds to create a client to interact with the Google Drive API
+    # use credentials to create a client to interact with the Google Drive API
     scope = [
-        'https://spreadsheets.google.com/feeds',
-        'https://www.googleapis.com/auth/drive'
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive"
     ]
     creds = ServiceAccountCredentials.from_json_keyfile_name(
-        'client_secret.json', scope)
+        "client_secret.json", scope)
     client = gspread.authorize(creds)
 
     # open required spreadhseet and worksheet
-    spreadsheet = client.open('YSC-foh')
-    sheet = client.open("YSC-foh").worksheet('Spr-Membership')
-    headers = ['Times', '£3', '£4', 'Free', 'Half-Price', 'Special', 'Total']
+    spreadsheet = client.open("YSC-foh")
+    sheet = spreadsheet.worksheet("Spr-Membership")
+    headers = ["Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"]
     worksheets = spreadsheet.worksheets()
     worksheets_names = list()
     for i in worksheets:
         worksheets_names.append(i.title)
 
+    # main sheet
     try:
         cell = sheet.find(movie)
-        cell_range = sheet.range('B' + str(cell.row) + ':G' + str(cell.row))
+        cell_range = sheet.range("B" + str(cell.row) + ":G" + str(cell.row))
         k = 1
         for cell in cell_range:
             cell.value = finals[headers[k]]
@@ -51,37 +52,46 @@ def export_timedata(movie, movie_timedata, finals):
         sheet.update_cells(cell_range)
     except:
         new_row = [
-            movie, finals['£3'], finals['£4'], finals['Free'],
-            finals['Half-Price'], finals['Special'], finals['Total']
+            movie, finals["£3"], finals["£4"], finals["Free"],
+            finals["Half-Price"], finals["Special"], finals["Total"]
         ]
         sheet.append_row(new_row)
 
-    if movie not in worksheets_names:
-        worksheet = spreadsheet.add_worksheet(movie, 100, 7)
-        print('Created a new worksheet for ' + movie)
-    else:
-        print('Overwriting previous data for ' + movie)
+    # timedata
+    num_of_values = len(movie_timedata)
+    cell_tops = {1:"£3",2:"£4",3:"Free",4:"Half-Price",5:"Special",6:"Total"}
+
+    if movie in worksheets_names:
         worksheet = spreadsheet.worksheet(movie)
+        print("Overwriting previous data for {0}.".format(movie))
+    else:
+        worksheet = spreadsheet.add_worksheet(movie, num_of_values, 7)
+        print("Created a new worksheet for {0}.".format(movie))
 
-    cell_list = worksheet.range('A1:G1')
+    work_cells = worksheet.range("A1:G" + str(num_of_values))
     k = 0
-    for cell in cell_list:
-        cell.value = headers[k]
-        k += 1
-    worksheet.update_cells(cell_list)
+    t_d_t = 0
+    cur_time = ""
+    l = 0
+    timedata_k = list(movie_timedata.keys())
+    for cell in work_cells:
+        if k < 7:
+            cell.value = headers[k]
+        elif k%7 == 0:
+            cell.value = timedata_k[t_d_t]
+            cur_time = timedata_k[t_d_t]
+            t_d_t += 1
+            l += 1
+        else:
+            cell.value = movie_timedata[cur_time][cell_tops[l]]
+            if l == 6:
+                l = 0
+            else:
+                l += 1
+        k+=1
 
-    print('Exporting timedata')
-    cells = ['B', 'C', 'D', 'E', 'F', 'G']
-    k = 2
-    for i in movie_timedata:
-        worksheet.update_acell('A' + str(k), str(i))
-        cell_list = worksheet.range('B' + str(k) + ':G' + str(k))
-        for cell in cell_list:
-            cell.value = movie_timedata[i][worksheet.acell(
-                cells[cell.col - 2] + '1').value]
-        worksheet.update_cells(cell_list)
-        k += 1
-    print('Finished exporting timedata')
+    worksheet.update_cells(work_cells)
+    print("Timedata upload complete.")
 
 
 def report(movie, movie_totals, movie_timedata, early_screening=False):
@@ -149,9 +159,10 @@ def warning_messages(total):
 
 def record(exists, movie, early_sceening=False):
 
+    global movie_data, dividor
+    scene_splitter = '#' * 69
     recording = True
     minute_time = '0'
-    global movie_data
     movie_totals = dict()
     movie_timedata = dict()
     ticket_type = {
@@ -187,11 +198,9 @@ def record(exists, movie, early_sceening=False):
     while recording:
 
         warning_messages(movie_totals['Total'])
-        dividor = '-' * 69
-        scene_splitter = '#' * 69
 
         print(dividor)
-        print('Movie: ' + movie)
+        print("Movie: {0}".format(movie))
         format_display(movie_totals)
         print(dividor)
         print('Recording Mode:')
@@ -243,7 +252,7 @@ def record(exists, movie, early_sceening=False):
                 movie_totals[ticket_type[ticket].split(' ')[1]] += 1
                 movie_timedata[minute_time][ticket_type[ticket].split(' ')[
                     1]] += 1
-                print(time_now + ' -- ' + ticket_type[ticket])
+                print("{0} -- {1}".format(time_now, ticket_type[ticket]))
             else:
                 if movie_totals[ticket_type[ticket].split(' ')[1]] > 0:
                     movie_totals['Total'] -= 1
@@ -251,14 +260,13 @@ def record(exists, movie, early_sceening=False):
                     movie_totals[ticket_type[ticket].split(' ')[1]] -= 1
                     movie_timedata[minute_time][ticket_type[ticket].split(' ')[
                         1]] -= 1
-                    print(time_now + ' -- ' + ticket_type[ticket])
+                    print("{0} -- {1}".format(time_now, ticket_type[ticket]))
                 else:
-                    print('There are no customers who have bought a ' +
-                          ticket_type[ticket].split(' ')[1] + ' ticket.')
+                    print('There are no customers who have bought a {0} ticket.'.format(ticket_type[ticket].split(' ')[1]))
             last_time = minute_time
 
         else:
-            print('Invalid input: ' + ticket + '.')
+            print('Invalid input: {0}.'.format(ticket))
 
     movie_data[movie]['final'] = movie_totals
     movie_data[movie]['timedata'] = movie_timedata
@@ -323,7 +331,7 @@ while running:
         elif report_choice == 'no':
             pass
         else:
-            print('Invalid input: ' + report + '.')
+            print('Invalid input: {0}.'.format(report_choice))
 
     elif choice == 'report' and len(movies_recorded) > 0:
         print('Movies in the database:')
@@ -350,8 +358,4 @@ while running:
             pass
 
     else:
-        print('Invalid input: ' + choice + '.')
-        try:
-            input("Press Enter to continue...")
-        except SyntaxError:
-            pass
+        print('Invalid input: {0}.'.format(choice))
