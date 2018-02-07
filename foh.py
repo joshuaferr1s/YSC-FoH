@@ -11,7 +11,7 @@ def existing_movies(movies_recorded):
     print(dividor)
 
 
-def format_report(d):
+def format_display(d):
     output_text = ""
     for i in d:
         if output_text != "":
@@ -91,7 +91,7 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
     print('Movie: ' + movie)
     print(dividor)
     print('End of the night:')
-    format_report(movie_totals)
+    format_display(movie_totals)
     print(dividor)
     if not early_sceening:
         pre_bets = {
@@ -111,7 +111,7 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
                 pre_bets['Special'] += movie_timedata[key]['Special']
                 pre_bets['Total'] += movie_timedata[key]['Total']
         print('Before bets:')
-        format_report(pre_bets)
+        format_display(pre_bets)
         print(dividor)
         try:
             multiplier = int(movie_totals['Total']) / int(pre_bets['Total'])
@@ -192,7 +192,7 @@ def record(exists, movie, early_sceening=False):
 
         print(dividor)
         print('Movie: ' + movie)
-        format_report(movie_totals)
+        format_display(movie_totals)
         print(dividor)
         print('Recording Mode:')
         print('(3) £3')
