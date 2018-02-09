@@ -62,7 +62,7 @@ def export_timedata(movie, movie_timedata, finals):
         sheet.append_row(new_row)
 
     # timedata
-    num_of_values = len(movie_timedata)
+    num_of_values = len(movie_timedata) + 1
     cell_tops = {1:"£3",2:"£4",3:"Free",4:"Half-Price",5:"Special",6:"Total"}
 
     if movie in worksheets_names:
@@ -157,6 +157,7 @@ def record(exists, movie, early_sceening=False):
     scene_splitter = "#" * 69
     recording = True
     minute_time = "0"
+    last_time = ""
     movie_totals = dict()
     movie_timedata = dict()
     ticket_type = {
@@ -203,7 +204,6 @@ def record(exists, movie, early_sceening=False):
         print(scene_splitter)
         print(scene_splitter)
         time_now = strftime("%H%M", localtime())
-        last_time = ""
 
         if ticket == "stop":
             recording = False
