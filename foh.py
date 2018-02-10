@@ -1,4 +1,4 @@
-import gspread
+import gspread, decimal
 from time import localtime, strftime
 from file_helpers import *
 from oauth2client.service_account import ServiceAccountCredentials
@@ -121,7 +121,7 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
         format_display(pre_bets)
         print(dividor)
         try:
-            multiplier = int(movie_totals["Total"]) / int(pre_bets["Total"])
+            multiplier = Decimal(movie_totals["Total"]) / int(pre_bets["Total"])
             print("Multiplier: {0}".format(str(multiplier)))
         except ZeroDivisionError:
             print("There were no customers before 7:00 and so no multiplier.")
@@ -266,7 +266,7 @@ while running:
     except:
         movie_data = dict()
     movie_total = dict()
-    movies_recorded = keys_to_list(movie_data)
+    movies_recorded = list(movie_data.keys())
     early_sceening = False
 
     print("\nYSC Front of House")
