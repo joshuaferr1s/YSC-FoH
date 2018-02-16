@@ -1,4 +1,5 @@
-import gspread, decimal
+import gspread
+from decimal import *
 from time import localtime, strftime
 from file_helpers import *
 from oauth2client.service_account import ServiceAccountCredentials
@@ -24,6 +25,13 @@ def format_display(d):
 
 def fresh_dict():
     return {"£3": 0, "£4": 0, "Free": 0, "Half-Price": 0, "Special": 0, "Total": 0}
+
+
+def copy_dict(d):
+    n_d = dict()
+    for i in d:
+        n_d[i] = d[i]
+    return n_d
 
 
 def export_timedata(movie, movie_timedata, finals):
@@ -72,6 +80,11 @@ def export_timedata(movie, movie_timedata, finals):
         worksheet = spreadsheet.add_worksheet(movie, num_of_values, 7)
         print("Created a new worksheet for {0}.".format(movie))
 
+    difference = len(movie_timedata) - worksheet.row_count + 1
+    print(difference)
+    if difference > 0:
+        worksheet.add_rows(difference)
+    print(num_of_values)
     work_cells = worksheet.range("A1:G" + str(num_of_values))
     k = 0
     t_d_t = 0
@@ -111,12 +124,7 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
         pre_bets = fresh_dict()
         for key in movie_timedata:
             if int(key) < 31:
-                pre_bets["£3"] += movie_timedata[key]["£3"]
-                pre_bets["£4"] += movie_timedata[key]["£4"]
-                pre_bets["Free"] += movie_timedata[key]["Free"]
-                pre_bets["Half-Price"] += movie_timedata[key]["Half-Price"]
-                pre_bets["Special"] += movie_timedata[key]["Special"]
-                pre_bets["Total"] += movie_timedata[key]["Total"]
+                pre_bets = movie_timedata[key]
         print("Before bets:")
         format_display(pre_bets)
         print(dividor)
@@ -129,7 +137,7 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
     print("\nWould you like to upload this data to the Google Sheet?")
     print("* yes")
     print("* no")
-    choice = input("> ")
+    choice = input("> ").lower()
 
     if choice == "yes":
         export_timedata(movie, movie_timedata, movie_totals)
@@ -175,8 +183,8 @@ def record(exists, movie, early_sceening=False):
 
     if exists:
         # load previous data to continue recording
-        movie_totals = movie_data[movie]["final"]
-        movie_timedata = movie_data[movie]["timedata"]
+        movie_totals = copy_dict(movie_data[movie]["final"])
+        movie_timedata = copy_dict(movie_data[movie]["timedata"])
     else:
         movie_data[movie] = dict()
         movie_data[movie]["final"] = dict()
@@ -224,12 +232,14 @@ def record(exists, movie, early_sceening=False):
             if minute_time not in movie_timedata and last_time == "":
                 movie_timedata[minute_time] = fresh_dict()
             elif minute_time not in movie_timedata and last_time != "":
-                movie_timedata[minute_time] = movie_timedata[last_time]
+                movie_timedata[minute_time] = copy_dict(movie_timedata[last_time])
+            else:
+                pass
 
             if ticket_type[ticket].split(" ")[0] == "Added":
                 movie_totals["Total"] += 1
-                movie_timedata[minute_time]["Total"] += 1
                 movie_totals[ticket_type[ticket].split(" ")[1]] += 1
+                movie_timedata[minute_time]["Total"] += 1
                 movie_timedata[minute_time][ticket_type[ticket].split(" ")[
                     1]] += 1
                 print("{0} -- {1}".format(time_now, ticket_type[ticket]))
@@ -248,8 +258,8 @@ def record(exists, movie, early_sceening=False):
         else:
             print("Invalid input: {0}.".format(ticket))
 
-    movie_data[movie]["final"] = movie_totals
-    movie_data[movie]["timedata"] = movie_timedata
+    movie_data[movie]["final"] = copy_dict(movie_totals)
+    movie_data[movie]["timedata"] = copy_dict(movie_timedata)
     write_movie_dict("movie_database.json", movie_data)
 
     return movie_totals, movie_timedata
@@ -330,8 +340,8 @@ while running:
             early_screening = False
 
         if movie in movies_recorded:
-            movie_totals = movie_data[movie]["final"]
-            movie_timedata = movie_data[movie]["timedata"]
+            movie_totals = copy_dict(movie_data[movie]["final"])
+            movie_timedata = copy_dict(movie_data[movie]["timedata"])
             report(movie, movie_totals, movie_timedata, early_sceening)
         else:
             pass
