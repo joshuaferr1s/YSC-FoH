@@ -24,7 +24,14 @@ def format_display(d):
 
 
 def fresh_dict():
-    return {"£3": 0, "£4": 0, "Free": 0, "Half-Price": 0, "Special": 0, "Total": 0}
+    return {
+        "£3": 0,
+        "£4": 0,
+        "Free": 0,
+        "Half-Price": 0,
+        "Special": 0,
+        "Total": 0
+    }
 
 
 def copy_dict(d):
@@ -136,7 +143,8 @@ def report(movie, movie_totals, movie_timedata, early_screening=False):
         format_display(pre_bets)
         print(dividor)
         try:
-            multiplier = Decimal(movie_totals["Total"]) / int(pre_bets["Total"])
+            multiplier = Decimal(movie_totals["Total"]) / int(
+                pre_bets["Total"])
             print("Multiplier: {0}".format(str(multiplier)))
         except ZeroDivisionError:
             print("There were no customers before 7:00 and so no multiplier.")
@@ -239,7 +247,8 @@ def record(exists, movie, early_sceening=False):
             if minute_time not in movie_timedata and last_time == "":
                 movie_timedata[minute_time] = fresh_dict()
             elif minute_time not in movie_timedata and last_time != "":
-                movie_timedata[minute_time] = copy_dict(movie_timedata[last_time])
+                movie_timedata[minute_time] = copy_dict(
+                    movie_timedata[last_time])
             else:
                 pass
 
@@ -259,7 +268,9 @@ def record(exists, movie, early_sceening=False):
                         1]] -= 1
                     print("{0} -- {1}".format(time_now, ticket_type[ticket]))
                 else:
-                    print("There are no customers who have bought a {0} ticket.".format(ticket_type[ticket].split(" ")[1]))
+                    print(
+                        "There are no customers who have bought a {0} ticket.".
+                        format(ticket_type[ticket].split(" ")[1]))
             last_time = minute_time
 
         else:
