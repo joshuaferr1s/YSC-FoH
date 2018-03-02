@@ -259,13 +259,7 @@ def record(exists, movie, early_sceening=False):
                         1]] -= 1
                     print("{0} -- {1}".format(time_now, ticket_type[ticket]))
                 else:
-<<<<<<< HEAD
                     print("There are no customers who have bought a {0} ticket.".format(ticket_type[ticket].split(" ")[1]))
-=======
-                    print(
-                        'There are no customers who have bought a {0} ticket.'.
-                        format(ticket_type[ticket].split(' ')[1]))
->>>>>>> origin/master
             last_time = minute_time
 
         else:
