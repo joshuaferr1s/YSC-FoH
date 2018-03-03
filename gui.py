@@ -305,6 +305,8 @@ class Record(tk.Frame):
         if exists:
             self.movie_totals = copy_dict(movie_data[self.movie]["final"])
             self.movie_timedata = copy_dict(movie_data[self.movie]["timedata"])
+            times_a = self.get_listo(self.movie_timedata)
+            self.last_time = times_a[-1]
         else:
             self.movie_totals = {
                 "£3": 0,
@@ -496,6 +498,12 @@ class Record(tk.Frame):
             else:
                 minute_time = str(int(time_now) - 1910)
         return minute_time
+
+    def get_listo(d):
+        l = list()
+        for i in d:
+            l.append(i)
+        return l
 
     def finished(self):
         global movie_data, movie_totals_g, movie_timedata_g
