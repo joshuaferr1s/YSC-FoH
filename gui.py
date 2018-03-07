@@ -450,6 +450,7 @@ class Record(tk.Frame):
         self.movie_timedata[self.minute_time][ticket] += 1
         self.update_labels()
         self.last_time = self.minute_time
+        self.cap_check()
 
     def decr_ticket(self, ticket):
         self.minute_time = self.get_time()
@@ -464,6 +465,7 @@ class Record(tk.Frame):
                      "There are no tickets of type: {0}".format(ticket))
         self.update_labels()
         self.last_time = self.minute_time
+        self.cap_check()
 
     def timedata_handler(self):
         if self.minute_time not in self.movie_timedata and self.last_time == "":
@@ -504,6 +506,16 @@ class Record(tk.Frame):
         for i in d:
             l.append(i)
         return l
+
+    def cap_check(self):
+        if self.movie_totals["Total"] == 290:
+            showinfo("Alert!", "We are at maximum capacity! (assuming 10 staff)")
+        elif self.movie_totals["Total"] > 280:
+            showinfo("Alert!", "Perform a seat check! (Approx. 10 left!")
+        elif self.movie_totals["Total"] > 270:
+            showinfo("Alert!", "Perform a seat check! (Approx. 20 left!")
+        elif self.movie_totals["Total"] > 260:
+            showinfo("Alert!", "Perform a seat check! (Approx. 30 left!")
 
     def finished(self):
         global movie_data, movie_totals_g, movie_timedata_g
