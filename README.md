@@ -5,7 +5,7 @@ A simple system to track and report the tickets sold at each screening. The prog
 ## Getting Started
 
 Simply download this repository and then cd into the folder where you saved it and run the foh.py file with Python 3 for a terminal display or gui.py file with Python 3 for a clickable interface. For example, on mac this would look like so for the graphical interface:
-```python
+```
 cd path/to/file
 python3 gui.py
 ```
