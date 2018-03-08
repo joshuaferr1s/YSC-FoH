@@ -509,7 +509,8 @@ class Record(tk.Frame):
 
     def cap_check(self):
         if self.movie_totals["Total"] == 290:
-            showinfo("Alert!", "We are at maximum capacity! (assuming 10 staff)")
+            showinfo("Alert!",
+                     "We are at maximum capacity! (assuming 10 staff)")
         elif self.movie_totals["Total"] == 280:
             showinfo("Alert!", "Perform a seat check! (Approx. 10 left!")
         elif self.movie_totals["Total"] == 270:
