@@ -300,7 +300,7 @@ class Record(tk.Frame):
         self.button_1.destroy()
         global cur_movie, movie_data, exists, early_sceening
         self.movie = cur_movie
-        lab_text = "Recording: {0}".format(self.movie)
+        lab_text = "{0}".format(self.movie)
 
         if exists:
             self.movie_totals = copy_dict(movie_data[self.movie]["final"])
