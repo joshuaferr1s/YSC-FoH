@@ -16,4 +16,4 @@ YSC is a student cinema based in the University of York, England offering the ch
 
 ## Authors
 
-* **Joshua Ferris** - *Githubk* - [joshuaferr1s](https://github.com/joshuaferr1s)
+* **Joshua Ferris** - *Github* - [joshuaferr1s](https://github.com/joshuaferr1s)
