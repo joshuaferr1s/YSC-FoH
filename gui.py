@@ -10,7 +10,6 @@ NORM_FONT = ("Verdana", 10)
 SMALL_FONT = ("Verdana", 8)
 cur_movie = ""
 exists = False
-early_sceening = True
 movie_totals_g = dict()
 movie_timedata_g = dict()
 
@@ -45,7 +44,73 @@ def fresh_dict():
     }
 
 
-movie_data = load_json_file("movie_database.json")
+def import_timedata():
+    global movie_data
+    # use credentials to create a client to interact with the Google Drive API
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+        "client_secret.json", scope)
+    client = gspread.authorize(creds)
+
+    # open required spreadhseet and worksheet
+    spreadsheet = client.open("YSC-foh")
+    sheet = spreadsheet.worksheet("Full-List")
+    headers = [
+        "Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"
+    ]
+    worksheets = spreadsheet.worksheets()
+    worksheets_names = list()
+    for i in worksheets:
+        worksheets_names.append(i.title)
+
+    # main sheet
+    cell_range = sheet.range("A2:G"+str(sheet.row_count))
+    k = 0
+    movies_list = list()
+    finals = dict()
+    temp_dict = dict()
+    for cell in cell_range:
+        m_k = k%7
+        if m_k == 0:
+            cur_movie = cell.value
+            movies_list.append(cell.value)
+            temp_dict[cur_movie] = dict()
+            temp_dict[cur_movie]["final"] = fresh_dict()
+            temp_dict[cur_movie]["final"] = dict()
+        else:
+            temp_dict[cur_movie]["final"][headers[m_k]] = int(cell.value)
+        k += 1
+    movie_data = copy_dict(temp_dict)
+    # timedata
+    for movie in movies_list:
+        if movie in worksheets_names:
+            worksheet = spreadsheet.worksheet(movie)
+            k=0
+            t_time = dict()
+            cur_time = ""
+            cell_range = worksheet.range("A2:G"+str(worksheet.row_count))
+            k = 0
+            for cell in cell_range:
+                m_k = k%7
+                if m_k == 0:
+                    cur_time = cell.value
+                    t_time[cur_time] = fresh_dict()
+                else:
+                    t_time[cur_time][headers[m_k]] = int(cell.value)
+                k += 1
+            movie_data[movie]["timedata"] = copy_dict(t_time)
+        else:
+            pass
+
+    write_movie_dict("movie_database.json", movie_data)
+
+try:
+    movie_data = load_json_file("movie_database.json")
+except:
+    movie_data = dict()
 
 
 class YscFoH(tk.Tk):
@@ -62,6 +127,7 @@ class YscFoH(tk.Tk):
 
         menubar = tk.Menu(container)
         filemenu = tk.Menu(menubar, tearoff=0)
+        filemenu.add_command(label="Download Data", command=import_timedata)
         filemenu.add_command(
             label="Save settings",
             command=lambda: showinfo("Alert!", "Not implemented yet!"))
@@ -156,48 +222,32 @@ class SelectMovie(tk.Frame):
 
         button1 = tk.Button(
             self,
-            text="Early",
+            text="Select",
             highlightbackground="light sky blue",
             command=
-            lambda: self.recorder(temp_mov_list[listMovies.curselection()[0]], True, True)
+            lambda: self.recorder(self.temp_mov_list[self.listMovies.curselection()[0]], True)
         )
-        button1.grid(row=11, column=0, sticky="nsew")
+        button1.grid(row=11, column=0, columnspan=5, sticky="nsew")
         button2 = tk.Button(
             self,
-            text="Regular",
+            text="New",
             highlightbackground="light sky blue",
             command=
-            lambda: self.recorder(temp_mov_list[listMovies.curselection()[0]], True, False)
+            lambda: self.recorder(entry1.get(), self.check_ex(entry1.get()))
         )
-        button2.grid(row=11, column=1, columnspan=4, sticky="nsew")
+        button2.grid(row=2, column=5, columnspan=2, sticky="nsew")
         button3 = tk.Button(
-            self,
-            text="New Early",
-            highlightbackground="light sky blue",
-            command=
-            lambda: self.recorder(entry1.get(), self.check_ex(entry1.get()), True)
-        )
-        button3.grid(row=2, column=5, sticky="nsew")
-        button4 = tk.Button(
-            self,
-            text="New Regular",
-            highlightbackground="light sky blue",
-            command=
-            lambda: self.recorder(entry1.get(), self.check_ex(entry1.get()), False)
-        )
-        button4.grid(row=2, column=6, sticky="nsew")
-        button5 = tk.Button(
             self,
             text="Main Menu",
             highlightbackground="light sky blue",
             command=lambda: controller.show_frame(StartPage))
-        button5.grid(row=3, column=5, columnspan=2, sticky="nsew")
-        button6 = tk.Button(
+        button3.grid(row=3, column=5, columnspan=2, sticky="nsew")
+        button4 = tk.Button(
             self,
             text="Update",
             highlightbackground="light sky blue",
             command=self.updateMovies)
-        button6.grid(row=12, column=0, columnspan=5, sticky="nsew")
+        button4.grid(row=12, column=0, columnspan=5, sticky="nsew")
 
     def updateMovies(self):
         self.listMovies.destroy()
@@ -211,11 +261,10 @@ class SelectMovie(tk.Frame):
             self.temp_mov_list.append(x)
             self.listMovies.insert(tk.END, str(" " + x))
 
-    def recorder(self, movie, d_exists, d_early):
-        global cur_movie, exists, early_sceening
+    def recorder(self, movie, d_exists):
+        global cur_movie, exists
         cur_movie = movie
         exists = d_exists
-        early_sceening = d_early
         self.cont.show_frame(Record)
 
     def check_ex(self, movie):
@@ -298,7 +347,7 @@ class Record(tk.Frame):
 
     def recorder(self):
         self.button_1.destroy()
-        global cur_movie, movie_data, exists, early_sceening
+        global cur_movie, movie_data, exists
         self.movie = cur_movie
         lab_text = "{0}".format(self.movie)
 
@@ -487,21 +536,11 @@ class Record(tk.Frame):
     def get_time(self):
         time_now = strftime("%H%M", localtime())
         minute_time = ""
-        if early_sceening:
-            if int(time_now) < 1800:
-                minute_time = str(int(time_now) - 1790)
-            else:
-                minute_time = str(int(time_now) - 1830)
-        else:
-            if int(time_now) < 1900:
-                minute_time = str(int(time_now) - 1830)
-            elif int(time_now) >= 1900 and int(time_now) < 2000:
-                minute_time = str(int(time_now) - 1870)
-            else:
-                minute_time = str(int(time_now) - 1910)
+        time_adjust = 1830 + (int(str(time_now)[0:2]) - 18)*40
+        minute_time = str(int(time_now) - time_adjust)
         return minute_time
 
-    def get_listo(d):
+    def get_listo(self, d):
         l = list()
         for i in d:
             l.append(i)
@@ -599,13 +638,6 @@ class Report(tk.Frame):
         self.label16.destroy()
         self.label17.destroy()
         self.label18.destroy()
-        self.label19.destroy()
-        self.label110.destroy()
-        self.label111.destroy()
-        self.label112.destroy()
-        self.label113.destroy()
-        self.label114.destroy()
-        self.label115.destroy()
         self.listMovies.destroy()
         self.scrollbar.destroy()
         self.B1.destroy()
@@ -640,27 +672,26 @@ class Report(tk.Frame):
             self.listMovies.insert(tk.END, str(" " + x))
 
         self.B1 = tk.Button(
-            self, highlightbackground="light sky blue", text="Early")
-        self.B1.config(command=lambda: self.display_labels(temp_mov_list[self.listMovies.curselection()[0]], True))
-        self.B1.grid(row=16, column=0, columnspan=2, sticky="nsew")
-        self.B2 = tk.Button(
-            self, highlightbackground="light sky blue", text="Regular")
-        self.B2.config(command=lambda: self.display_labels(temp_mov_list[self.listMovies.curselection()[0]], False))
-        self.B2.grid(row=16, column=2, columnspan=4, sticky="nsew")
+            self, highlightbackground="light sky blue", text="Select")
+        self.B1.config(command=lambda: self.display_labels(temp_mov_list[self.listMovies.curselection()[0]]))
+        self.B1.grid(row=16, column=0, columnspan=6, sticky="nsew")
 
-        self.display_labels(temp_mov_list[self.listMovies.size() - 1], False)
+        self.display_labels(temp_mov_list[self.listMovies.size() - 1])
 
     def finished(self):
         self.fresh_frame()
         self.cont.show_frame(StartPage)
 
-    def display_labels(self, movie, early_s):
+    def display_labels(self, movie):
         global movie_data
 
         self.clear_labels()
         self.movie = movie
         self.movie_totals = copy_dict(movie_data[movie]["final"])
-        self.movie_timedata = copy_dict(movie_data[movie]["timedata"])
+        try:
+            self.movie_timedata = copy_dict(movie_data[movie]["timedata"])
+        except KeyError:
+            self.movie_timedata = {}
 
         self.label11 = tk.Label(
             self,
@@ -703,44 +734,6 @@ class Report(tk.Frame):
             text="Total: {0}".format(self.movie_totals["Total"]),
             bg="light sky blue")
         self.label18.grid(row=8, column=7, columnspan=3, sticky="w")
-        if not early_s:
-            pre_bets = fresh_dict()
-            for key in self.movie_timedata:
-                if int(key) < 31:
-                    pre_bets = self.movie_timedata[key]
-            self.label19 = tk.Label(
-                self, text="Pre-Bets:", font=LARGE_FONT, bg="light sky blue")
-            self.label19.grid(row=9, column=6, columnspan=4, sticky="w")
-            self.label110 = tk.Label(
-                self,
-                text="£3: {0}".format(pre_bets["£3"]),
-                bg="light sky blue")
-            self.label110.grid(row=10, column=7, columnspan=3, sticky="w")
-            self.label111 = tk.Label(
-                self,
-                text="£4: {0}".format(pre_bets["£4"]),
-                bg="light sky blue")
-            self.label111.grid(row=11, column=7, columnspan=3, sticky="w")
-            self.label112 = tk.Label(
-                self,
-                text="Free: {0}".format(pre_bets["Free"]),
-                bg="light sky blue")
-            self.label112.grid(row=12, column=7, columnspan=3, sticky="w")
-            self.label113 = tk.Label(
-                self,
-                text="Half-Price: {0}".format(pre_bets["Half-Price"]),
-                bg="light sky blue")
-            self.label113.grid(row=13, column=7, columnspan=3, sticky="w")
-            self.label114 = tk.Label(
-                self,
-                text="Special: {0}".format(pre_bets["Special"]),
-                bg="light sky blue")
-            self.label114.grid(row=14, column=7, columnspan=3, sticky="w")
-            self.label115 = tk.Label(
-                self,
-                text="Total: {0}".format(pre_bets["Total"]),
-                bg="light sky blue")
-            self.label115.grid(row=15, column=7, columnspan=3, sticky="w")
 
     def export_timedata(self, movie, finals, movie_timedata):
         # use credentials to create a client to interact with the Google Drive API
@@ -754,7 +747,7 @@ class Report(tk.Frame):
 
         # open required spreadhseet and worksheet
         spreadsheet = client.open("YSC-foh")
-        sheet = spreadsheet.worksheet("Spr-Membership")
+        sheet = spreadsheet.worksheet("Full-List")
         headers = [
             "Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"
         ]
@@ -833,13 +826,6 @@ class Report(tk.Frame):
         self.label16.destroy()
         self.label17.destroy()
         self.label18.destroy()
-        self.label19.destroy()
-        self.label110.destroy()
-        self.label111.destroy()
-        self.label112.destroy()
-        self.label113.destroy()
-        self.label114.destroy()
-        self.label115.destroy()
 
 
 app = YscFoH()
