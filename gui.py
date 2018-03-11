@@ -58,22 +58,20 @@ def import_timedata():
     # open required spreadhseet and worksheet
     spreadsheet = client.open("YSC-foh")
     sheet = spreadsheet.worksheet("Full-List")
-    headers = [
-        "Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"
-    ]
+    headers = ["Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"]
     worksheets = spreadsheet.worksheets()
     worksheets_names = list()
     for i in worksheets:
         worksheets_names.append(i.title)
 
     # main sheet
-    cell_range = sheet.range("A2:G"+str(sheet.row_count))
+    cell_range = sheet.range("A2:G" + str(sheet.row_count))
     k = 0
     movies_list = list()
     finals = dict()
     temp_dict = dict()
     for cell in cell_range:
-        m_k = k%7
+        m_k = k % 7
         if m_k == 0:
             cur_movie = cell.value
             movies_list.append(cell.value)
@@ -88,13 +86,13 @@ def import_timedata():
     for movie in movies_list:
         if movie in worksheets_names:
             worksheet = spreadsheet.worksheet(movie)
-            k=0
+            k = 0
             t_time = dict()
             cur_time = ""
-            cell_range = worksheet.range("A2:G"+str(worksheet.row_count))
+            cell_range = worksheet.range("A2:G" + str(worksheet.row_count))
             k = 0
             for cell in cell_range:
-                m_k = k%7
+                m_k = k % 7
                 if m_k == 0:
                     cur_time = cell.value
                     t_time[cur_time] = fresh_dict()
@@ -106,6 +104,7 @@ def import_timedata():
             pass
 
     write_movie_dict("movie_database.json", movie_data)
+
 
 try:
     movie_data = load_json_file("movie_database.json")
@@ -233,8 +232,7 @@ class SelectMovie(tk.Frame):
             text="New",
             highlightbackground="light sky blue",
             command=
-            lambda: self.recorder(entry1.get(), self.check_ex(entry1.get()))
-        )
+            lambda: self.recorder(entry1.get(), self.check_ex(entry1.get())))
         button2.grid(row=2, column=5, columnspan=2, sticky="nsew")
         button3 = tk.Button(
             self,
@@ -536,7 +534,7 @@ class Record(tk.Frame):
     def get_time(self):
         time_now = strftime("%H%M", localtime())
         minute_time = ""
-        time_adjust = 1830 + (int(str(time_now)[0:2]) - 18)*40
+        time_adjust = 1830 + (int(str(time_now)[0:2]) - 18) * 40
         minute_time = str(int(time_now) - time_adjust)
         return minute_time
 
