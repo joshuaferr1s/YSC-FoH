@@ -790,26 +790,21 @@ class Report(tk.Frame):
         difference = len(movie_timedata) - worksheet.row_count + 1
         if difference > 0:
             worksheet.add_rows(difference)
+
         work_cells = worksheet.range("A1:G" + str(num_of_values))
         k = 0
-        t_d_t = 0
-        cur_time = ""
         l = 0
+        cur_time = ""
         timedata_k = list(movie_timedata.keys())
         for cell in work_cells:
+            m_k = k % 7
             if k < 7:
                 cell.value = headers[k]
-            elif k % 7 == 0:
-                cell.value = timedata_k[t_d_t]
-                cur_time = timedata_k[t_d_t]
-                t_d_t += 1
-                l += 1
+            elif m_k == 0:
+                cell.value = timedata_k[m_k]
+                cur_time = timedata_k[m_k]
             else:
-                cell.value = movie_timedata[cur_time][cell_tops[l]]
-                if l == 6:
-                    l = 0
-                else:
-                    l += 1
+                cell.value = movie_timedata[cur_time][headers[m_k]]
             k += 1
 
         worksheet.update_cells(work_cells)
