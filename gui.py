@@ -773,14 +773,6 @@ class Report(tk.Frame):
 
         # timedata
         num_of_values = len(movie_timedata) + 1
-        cell_tops = {
-            1: "£3",
-            2: "£4",
-            3: "Free",
-            4: "Half-Price",
-            5: "Special",
-            6: "Total"
-        }
 
         if movie in worksheets_names:
             worksheet = spreadsheet.worksheet(movie)
