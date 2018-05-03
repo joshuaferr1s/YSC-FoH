@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from time import localtime, strftime
 import json, gspread
+from tkinter import messagebox
 from tkinter.messagebox import showinfo
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -127,9 +128,6 @@ class YscFoH(tk.Tk):
         menubar = tk.Menu(container)
         filemenu = tk.Menu(menubar, tearoff=0)
         filemenu.add_command(label="Download Data", command=import_timedata)
-        filemenu.add_command(
-            label="Save settings",
-            command=lambda: showinfo("Alert!", "Not implemented yet!"))
         filemenu.add_separator()
         filemenu.add_command(label="Exit", command=quit)
         menubar.add_cascade(label="File", menu=filemenu)
@@ -642,6 +640,7 @@ class Report(tk.Frame):
         self.B2.destroy()
 
     def compile_report(self):
+        global movie_data
 
         self.button_2.destroy()
         self.button_3 = tk.Button(
@@ -749,10 +748,6 @@ class Report(tk.Frame):
         headers = [
             "Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"
         ]
-        worksheets = spreadsheet.worksheets()
-        worksheets_names = list()
-        for i in worksheets:
-            worksheets_names.append(i.title)
 
         # main sheet
         try:
@@ -772,35 +767,37 @@ class Report(tk.Frame):
             sheet.append_row(new_row)
 
         # timedata
-        num_of_values = len(movie_timedata) + 1
+        if messagebox.askyesno("YSC Helper", "Would you like to update the minute report?"):
 
-        if movie in worksheets_names:
-            worksheet = spreadsheet.worksheet(movie)
-        else:
-            worksheet = spreadsheet.add_worksheet(movie, num_of_values, 7)
+            num_of_values = len(movie_timedata) + 1
 
-        difference = len(movie_timedata) - worksheet.row_count + 1
-        if difference > 0:
-            worksheet.add_rows(difference)
-
-        work_cells = worksheet.range("A1:G" + str(num_of_values))
-        k = 0
-        l = 0
-        cur_time = ""
-        timedata_k = list(movie_timedata.keys())
-        for cell in work_cells:
-            m_k = k % 7
-            if k < 7:
-                cell.value = headers[k]
-            elif m_k == 0:
-                cell.value = timedata_k[m_k]
-                cur_time = timedata_k[m_k]
+            if movie in worksheets_names:
+                worksheet = spreadsheet.worksheet(movie)
             else:
-                cell.value = movie_timedata[cur_time][headers[m_k]]
-            k += 1
+                worksheet = spreadsheet.add_worksheet(movie, num_of_values, 7)
 
-        worksheet.update_cells(work_cells)
-        showinfo("Alert!", "Timedata upload complete.")
+            difference = len(movie_timedata) - worksheet.row_count + 1
+            if difference > 0:
+                worksheet.add_rows(difference)
+
+            work_cells = worksheet.range("A1:G" + str(num_of_values))
+            k = 0
+            l = 0
+            cur_time = ""
+            timedata_k = list(movie_timedata.keys())
+            for cell in work_cells:
+                m_k = k % 7
+                if k < 7:
+                    cell.value = headers[k]
+                elif m_k == 0:
+                    cell.value = timedata_k[m_k]
+                    cur_time = timedata_k[m_k]
+                else:
+                    cell.value = movie_timedata[cur_time][headers[m_k]]
+                k += 1
+
+            worksheet.update_cells(work_cells)
+        showinfo("Alert!", "Upload complete.")
 
     def clear_labels(self):
         self.label11.destroy()

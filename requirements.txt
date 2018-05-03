@@ -1,2 +1,2 @@
 gspread
-tkinter
+oauth2client
