@@ -3,10 +3,21 @@
 A simple system to track and report the tickets sold at each screening. The program can upload this data to a Google spreadsheet including a time analysis. It may not be pretty but it works.
 
 ## Getting Started
+Simply download this repository and have python3 and virtualenv installed.
 
-Simply download this repository and then cd into the folder where you saved it and run the foh.py file with Python 3 for a terminal display or gui.py file with Python 3 for a clickable interface. For example, on mac this would look like so for the graphical interface:
+## Set up dev environment
 ```
-cd path/to/file
+cd path/to/folder
+virtualenv -p python3 venv
+```
+
+## Activate it
+```
+source venv/bin/activate
+```
+
+## Run it
+```
 python3 gui.py
 ```
 
