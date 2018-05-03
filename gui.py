@@ -112,8 +112,6 @@ try:
 except:
     movie_data = dict()
 
-print(movie_data)
-
 
 class YscFoH(tk.Tk):
     def __init__(self, *args, **kwargs):
