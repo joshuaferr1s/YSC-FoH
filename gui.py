@@ -748,6 +748,10 @@ class Report(tk.Frame):
         headers = [
             "Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"
         ]
+        worksheets = spreadsheet.worksheets()
+        worksheets_names = list()
+        for i in worksheets:
+            worksheets_names.append(i.title)
 
         # main sheet
         try:
