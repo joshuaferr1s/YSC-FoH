@@ -291,8 +291,15 @@ class SelectMovie(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.cont = controller
 
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=0)
+        self.columnconfigure(2, weight=1)
+
+        self.rowconfigure(3, weight=1)
+
         self.temp_mov_list = list()
         self.label1 = tk.Label()
+        self.label2 = tk.Label()
         self.listMovies = tk.Listbox()
         self.scrollbar = tk.Scrollbar()
         self.entry1 = tk.Entry()
@@ -310,16 +317,22 @@ class SelectMovie(tk.Frame):
             text="Select a movie to record...",
             font=LARGE_FONT,
             bg=userPrefs["bg"])
-        self.label1.grid(row=0, column=0, columnspan=5, sticky="nsew")
+        self.label1.grid(row=0, column=0, columnspan=2, sticky="nsew")
+        self.label2 = tk.Label(
+            self,
+            text="... or record a new movie",
+            font=LARGE_FONT,
+            bg=userPrefs["bg"])
+        self.label2.grid(row=0, column=2, sticky="nsew")
 
         self.listMovies = tk.Listbox(
-            self, width=25, height=20, font=NORM_FONT, bg="#B6E3FD")
+            self, font=NORM_FONT, bg="#B6E3FD")
         self.listMovies.grid(
-            row=1, rowspan=10, column=0, columnspan=3, sticky="nsew")
+            row=1, rowspan=3, column=0, sticky="nsew")
         self.scrollbar = tk.Scrollbar(
             self, bg=userPrefs["bg"], orient="vertical")
         self.scrollbar.config(command=self.listMovies.yview)
-        self.scrollbar.grid(row=1, rowspan=10, column=4, sticky="nsew")
+        self.scrollbar.grid(row=1, rowspan=3, column=1, sticky="nsew")
 
         self.listMovies.config(yscrollcommand=self.scrollbar.set)
 
@@ -329,7 +342,7 @@ class SelectMovie(tk.Frame):
             self.listMovies.insert(tk.END, str(" " + x))
 
         self.entry1 = tk.Entry(self, highlightbackground=userPrefs["bg"])
-        self.entry1.grid(row=1, column=5, columnspan=2, sticky="nsew")
+        self.entry1.grid(row=1, column=2, sticky="nsew")
 
         self.button1 = tk.Button(
             self,
@@ -338,20 +351,20 @@ class SelectMovie(tk.Frame):
             command=
             lambda: self.recorder(self.temp_mov_list[self.listMovies.curselection()[0]])
         )
-        self.button1.grid(row=11, column=0, columnspan=5, sticky="nsew")
+        self.button1.grid(row=4, column=0, columnspan=2, sticky="nsew")
         self.button2 = tk.Button(
             self,
             text="New",
             highlightbackground=userPrefs["bg"],
             command=
             lambda: self.recorder(self.entry1.get()))
-        self.button2.grid(row=2, column=5, columnspan=2, sticky="nsew")
+        self.button2.grid(row=2, column=2, sticky="nsew")
         self.button3 = tk.Button(
             self,
             text="Main Menu",
             highlightbackground=userPrefs["bg"],
             command=lambda: self.cont.show_frame(StartPage))
-        self.button3.grid(row=3, column=5, columnspan=2, sticky="nsew")
+        self.button3.grid(row=4, column=2, sticky="nsew")
 
     def recorder(self, movie):
         global cur_movie, exists
@@ -434,7 +447,7 @@ class Record(tk.Frame):
 
         self.label1 = tk.Label(
             self, text=lab_text, font=("Comic Sans", 20), bg=userPrefs["bg"])
-        self.label1.grid(row=0, columnspan=5)
+        self.label1.grid(row=0, columnspan=1)
 
         #### £3 ####
         self.button3 = tk.Button(
@@ -572,6 +585,7 @@ class Record(tk.Frame):
         self.label9.destroy()
 
     def incr_ticket(self, ticket):
+        print("{0}: Added {1}".format(strftime("%H:%M:%S", localtime()), ticket))
         self.minute_time = self.get_time()
         self.timedata_handler()
         self.movie_totals["Total"] += 1
@@ -586,6 +600,7 @@ class Record(tk.Frame):
         self.minute_time = self.get_time()
         self.timedata_handler()
         if self.movie_totals[ticket] > 0:
+            print("{0}: Removed {1}".format(strftime("%H:%M:%S", localtime()), ticket))
             self.movie_totals["Total"] -= 1
             self.movie_totals[ticket] -= 1
             self.movie_timedata[self.minute_time]["Total"] -= 1
@@ -637,7 +652,6 @@ class Record(tk.Frame):
         movie_data[self.movie]["final"] = copy_dict(self.movie_totals)
         movie_data[self.movie]["timedata"] = copy_dict(self.movie_timedata)
         write_movie_dict("movie_database.json", movie_data)
-        self.fresh_frame()
         self.cont.show_frame(Report)
 
 
