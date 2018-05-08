@@ -1,10 +1,10 @@
 import tkinter as tk
-from tkinter import colorchooser
-from tkinter import ttk
-from time import localtime, strftime
-import json, gspread
-from tkinter import messagebox
+from tkinter import colorchooser, ttk, messagebox
 from tkinter.messagebox import showinfo
+from time import localtime, strftime
+
+import json
+import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 LARGE_FONT = ("Verdana", 12)
@@ -12,12 +12,12 @@ NORM_FONT = ("Verdana", 10)
 SMALL_FONT = ("Verdana", 8)
 cur_movie = ""
 exists = False
-
 userPrefs = dict()
 
-def load_json_file(file_name):
+
+def load_json_file(path):
     dict_from_file = {}
-    with open(file_name, 'r') as inf:
+    with open(path, 'r') as inf:
         dict_from_file = json.load(inf)
     return dict_from_file
 
