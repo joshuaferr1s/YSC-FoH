@@ -13,8 +13,7 @@ SMALL_FONT = ("Verdana", 8)
 cur_movie = ""
 exists = False
 
-user_background = "light sky blue"
-
+userPrefs = dict()
 
 def load_json_file(file_name):
     dict_from_file = {}
@@ -23,16 +22,16 @@ def load_json_file(file_name):
     return dict_from_file
 
 
+def write_movie_dict(path, data):
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=4)
+
+
 def copy_dict(d):
     n_d = dict()
     for i in d:
         n_d[i] = d[i]
     return n_d
-
-
-def write_movie_dict(path, data):
-    with open(path, 'w') as f:
-        json.dump(data, f, indent=4)
 
 
 def fresh_dict():
@@ -110,22 +109,19 @@ def import_timedata():
 
 def user_preferences(opt):
     ## Load user preferences from the file
-    global user_background
+    global userPrefs
 
     try:
-        with open("userPreferences.txt", 'r') as f:
+        with open("userPrefs.json", 'r') as f:
             pass
     except FileNotFoundError:
-        with open("userPreferences.txt", 'w') as f:
+        with open("userPrefs.json", 'w') as f:
             pass
 
     if opt == "save":
-        with open("userPreferences.txt", 'w') as inf:
-            inf.write(user_background)
+        write_movie_dict("userPrefs.json", userPrefs)
     elif opt == "load":
-        with open("userPreferences.txt", 'r') as inf:
-            user_background = str(inf.readline().split('\n', 1)[0])
-            print(user_background)
+        userPrefs = load_json_file("userPrefs.json")
 
 
 try:
@@ -191,33 +187,33 @@ class StartPage(tk.Frame):
         self.button2 = tk.Button()
 
     def draw(self):
-        global user_background
+        global userPrefs
 
-        self.config(bg=user_background)
+        self.config(bg=userPrefs["bg"])
 
         self.label1 = tk.Label(
             self,
             text="York Student Cinema",
             font=("Comic Sans", 20),
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label1.grid(row=1, column=1)
         self.label2 = tk.Label(
             self,
             text="Front of House",
             font=("Comic Sans", 20),
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label2.grid(row=2, column=1)
         self.button1 = tk.Button(
             self,
             text="Record",
             command=lambda: self.cont.show_frame(SelectMovie),
-            highlightbackground=user_background)
+            highlightbackground=userPrefs["bg"])
         self.button1.grid(row=3, column=1)
         self.button2 = tk.Button(
             self,
             text="Report",
             command=lambda: self.cont.show_frame(Report),
-            highlightbackground=user_background)
+            highlightbackground=userPrefs["bg"])
         self.button2.grid(row=4, column=1)
 
 
@@ -229,43 +225,61 @@ class UserPage(tk.Frame):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(2, weight=1)
         self.rowconfigure(0, weight=1)
-        self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=1)
 
         self.label1 = tk.Label()
         self.label2 = tk.Label()
         self.button1 = tk.Button()
         self.button2 = tk.Button()
+        self.button3 = tk.Button()
 
     def draw(self):
-        global user_background
+        global userPrefs
 
-        self.config(bg=user_background)
+        self.config(bg=userPrefs["bg"])
+
+        self.button2.destroy()
 
         self.label1 = tk.Label(
             self,
             text="User Preferences",
             font=("Comic Sans", 20),
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label1.grid(row=1, column=1)
         self.button1 = tk.Button(
             self,
             text="Color Selection",
             command=self.color_select,
-            highlightbackground=user_background)
+            highlightbackground=userPrefs["bg"])
         self.button1.grid(row=2, column=1)
         self.button2 = tk.Button(
             self,
+            command=self.nerd_select,
+            highlightbackground=userPrefs["bg"])
+        if userPrefs["nerd"]:
+            self.button2.config(text="No longer a nerd")
+        else:
+            self.button2.config(text="I wanna be a nerd")
+        self.button2.grid(row=3, column=1)
+        self.button3 = tk.Button(
+            self,
             text="Main Menu",
             command=lambda: self.cont.show_frame(StartPage),
-            highlightbackground=user_background)
-        self.button2.grid(row=3, column=1)
+            highlightbackground=userPrefs["bg"])
+        self.button3.grid(row=4, column=1)
 
     def color_select(self):
-        global user_background
+        global userPrefs
         c = colorchooser.askcolor()[1]
         if c is not None:
-            user_background = c
-        self.config(background=user_background)
+            userPrefs["bg"] = c
+        self.draw()
+        user_preferences("save")
+
+    def nerd_select(self):
+        global userPrefs
+        userPrefs["nerd"] = not userPrefs["nerd"]
+        self.draw()
         user_preferences("save")
 
 
@@ -284,15 +298,15 @@ class SelectMovie(tk.Frame):
         self.button3 = tk.Button()
 
     def draw(self):
-        global user_background, movie_data
+        global userPrefs, movie_data
 
-        self.config(bg=user_background)
+        self.config(bg=userPrefs["bg"])
 
         self.label1 = tk.Label(
             self,
             text="Select a movie to record...",
             font=LARGE_FONT,
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label1.grid(row=0, column=0, columnspan=5, sticky="nsew")
 
         self.listMovies = tk.Listbox(
@@ -300,7 +314,7 @@ class SelectMovie(tk.Frame):
         self.listMovies.grid(
             row=1, rowspan=10, column=0, columnspan=3, sticky="nsew")
         self.scrollbar = tk.Scrollbar(
-            self, bg=user_background, orient="vertical")
+            self, bg=userPrefs["bg"], orient="vertical")
         self.scrollbar.config(command=self.listMovies.yview)
         self.scrollbar.grid(row=1, rowspan=10, column=4, sticky="nsew")
 
@@ -311,13 +325,13 @@ class SelectMovie(tk.Frame):
             self.temp_mov_list.append(x)
             self.listMovies.insert(tk.END, str(" " + x))
 
-        self.entry1 = tk.Entry(self, highlightbackground=user_background)
+        self.entry1 = tk.Entry(self, highlightbackground=userPrefs["bg"])
         self.entry1.grid(row=1, column=5, columnspan=2, sticky="nsew")
 
         self.button1 = tk.Button(
             self,
             text="Select",
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=
             lambda: self.recorder(self.temp_mov_list[self.listMovies.curselection()[0]])
         )
@@ -325,14 +339,14 @@ class SelectMovie(tk.Frame):
         self.button2 = tk.Button(
             self,
             text="New",
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=
             lambda: self.recorder(self.entry1.get()))
         self.button2.grid(row=2, column=5, columnspan=2, sticky="nsew")
         self.button3 = tk.Button(
             self,
             text="Main Menu",
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.cont.show_frame(StartPage))
         self.button3.grid(row=3, column=5, columnspan=2, sticky="nsew")
 
@@ -395,8 +409,8 @@ class Record(tk.Frame):
         self.label9 = tk.Label()
 
     def draw(self):
-        global user_background, cur_movie, movie_data, exists
-        self.config(bg=user_background)
+        global userPrefs, cur_movie, movie_data, exists
+        self.config(bg=userPrefs["bg"])
         self.resetWidgets()
         self.movie = cur_movie
         lab_text = "{0}".format(self.movie)
@@ -416,7 +430,7 @@ class Record(tk.Frame):
             movie_data[self.movie]["timedata"] = dict()
 
         self.label1 = tk.Label(
-            self, text=lab_text, font=("Comic Sans", 20), bg=user_background)
+            self, text=lab_text, font=("Comic Sans", 20), bg=userPrefs["bg"])
         self.label1.grid(row=0, columnspan=5)
 
         #### £3 ####
@@ -424,18 +438,18 @@ class Record(tk.Frame):
             self,
             text="£3 +",
             font=NORM_FONT,
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.incr_ticket("£3"))
         self.button3.grid(row=1, column=1, sticky="nsew")
         self.button3_ = tk.Button(
             self,
             text="£3 -",
             font=NORM_FONT,
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.decr_ticket("£3"))
         self.button3_.grid(row=1, column=2, sticky="nsew")
         self.label3 = tk.Label(
-            self, text=self.movie_totals["£3"], bg=user_background)
+            self, text=self.movie_totals["£3"], bg=userPrefs["bg"])
         self.label3.grid(row=1, column=3, sticky="w")
 
         #### £4 ####
@@ -443,18 +457,18 @@ class Record(tk.Frame):
             self,
             text="£4 +",
             font=NORM_FONT,
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.incr_ticket("£4"))
         self.button4.grid(row=2, column=1, sticky="nsew")
         self.button4_ = tk.Button(
             self,
             text="£4 -",
             font=NORM_FONT,
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.decr_ticket("£4"))
         self.button4_.grid(row=2, column=2, sticky="nsew")
         self.label4 = tk.Label(
-            self, text=self.movie_totals["£4"], bg=user_background)
+            self, text=self.movie_totals["£4"], bg=userPrefs["bg"])
         self.label4.grid(row=2, column=3, sticky="w")
 
         #### Free ####
@@ -462,18 +476,18 @@ class Record(tk.Frame):
             self,
             text="Free +",
             font=NORM_FONT,
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.incr_ticket("Free"))
         self.button5.grid(row=3, column=1, sticky="nsew")
         self.button5_ = tk.Button(
             self,
             text="Free -",
             font=NORM_FONT,
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.decr_ticket("Free"))
         self.button5_.grid(row=3, column=2, sticky="nsew")
         self.label5 = tk.Label(
-            self, text=self.movie_totals["Free"], bg=user_background)
+            self, text=self.movie_totals["Free"], bg=userPrefs["bg"])
         self.label5.grid(row=3, column=3, sticky="w")
 
         #### Half-Price ####
@@ -481,18 +495,18 @@ class Record(tk.Frame):
             self,
             text="£2 +",
             font=NORM_FONT,
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.incr_ticket("Half-Price"))
         self.button6.grid(row=4, column=1, sticky="nsew")
         self.button6_ = tk.Button(
             self,
             text="£2 -",
             font=NORM_FONT,
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.decr_ticket("Half-Price"))
         self.button6_.grid(row=4, column=2, sticky="nsew")
         self.label6 = tk.Label(
-            self, text=self.movie_totals["Half-Price"], bg=user_background)
+            self, text=self.movie_totals["Half-Price"], bg=userPrefs["bg"])
         self.label6.grid(row=4, column=3, sticky="w")
 
         #### Special ####
@@ -500,28 +514,28 @@ class Record(tk.Frame):
             self,
             text="Special +",
             font=NORM_FONT,
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.incr_ticket("Special"))
         self.button7.grid(row=5, column=1, sticky="nsew")
         self.button7_ = tk.Button(
             self,
             text="Special -",
             font=NORM_FONT,
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=lambda: self.decr_ticket("Special"))
         self.button7_.grid(row=5, column=2, sticky="nsew")
         self.label7 = tk.Label(
-            self, text=self.movie_totals["Special"], bg=user_background)
+            self, text=self.movie_totals["Special"], bg=userPrefs["bg"])
         self.label7.grid(row=5, column=3, sticky="w")
 
         #### Total ####
         self.label8 = tk.Label(
-            self, text="Total:", font=("Comic Sans", 15), bg=user_background)
+            self, text="Total:", font=("Comic Sans", 15), bg=userPrefs["bg"])
         self.label8.grid(row=6, column=2, sticky="e")
         self.label9 = tk.Label(
             self,
             text=self.movie_totals["Total"],
-            bg=user_background,
+            bg=userPrefs["bg"],
             font=("Comic Sans", 15))
         self.label9.grid(row=6, column=3, sticky="w")
 
@@ -529,7 +543,7 @@ class Record(tk.Frame):
         self.button1 = tk.Button(
             self,
             text="Finished",
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=self.finished)
         self.button1.grid(row=7, column=1, columnspan=3, sticky="nsew")
 
@@ -673,28 +687,28 @@ class Report(tk.Frame):
         self.label7.destroy()   # Total label
 
     def draw(self):
-        global user_background, movie_data
+        global userPrefs, movie_data
 
-        self.config(bg=user_background)
+        self.config(bg=userPrefs["bg"])
         self.resetLabels()
 
         ## Render the buttons to the screen ##
         self.button1 = tk.Button(
             self,
             text="Main Menu",
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=self.finished)
         self.button1.grid(row=0, column=0, columnspan=2, sticky="nsew")
         self.button2 = tk.Button(
             self,
             text="Upload to Google",
-            highlightbackground=user_background,
+            highlightbackground=userPrefs["bg"],
             command=
             lambda: self.export_timedata(self.movie, self.movie_totals, self.movie_timedata)
         )
         self.button2.grid(row=0, column=2, sticky="nsew")
         self.button3 = tk.Button(
-            self, highlightbackground=user_background, text="Select", command=lambda: self.display_labels(temp_mov_list[self.listMovies.curselection()[0]]))
+            self, highlightbackground=userPrefs["bg"], text="Select", command=lambda: self.display_labels(temp_mov_list[self.listMovies.curselection()[0]]))
         self.button3.grid(row=8, column=0, columnspan=2, sticky="nsew")
 
         ## Display the current database ##
@@ -703,7 +717,7 @@ class Report(tk.Frame):
         self.listMovies.grid(
             row=1, rowspan=7, column=0, sticky="nsew")
         self.scrollbar = tk.Scrollbar(
-            self, bg=user_background, orient="vertical", command=self.listMovies.yview)
+            self, bg=userPrefs["bg"], orient="vertical", command=self.listMovies.yview)
         self.scrollbar.grid(row=1, rowspan=7, column=1, sticky="nsew")
         self.listMovies.config(yscrollcommand=self.scrollbar.set)
 
@@ -735,37 +749,37 @@ class Report(tk.Frame):
             self,
             text="Movie: {0}".format(self.movie),
             font=LARGE_FONT,
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label1.grid(row=1, column=2, sticky="w")
         self.label2 = tk.Label(
             self,
             text="{0}£3: {1}".format(sIndent, self.movie_totals["£3"]),
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label2.grid(row=2, column=2, sticky="w")
         self.label3 = tk.Label(
             self,
             text="{0}£4: {1}".format(sIndent, self.movie_totals["£4"]),
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label3.grid(row=3, column=2, sticky="w")
         self.label4 = tk.Label(
             self,
             text="{0}Free: {1}".format(sIndent, self.movie_totals["Free"]),
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label4.grid(row=4, column=2, sticky="w")
         self.label5 = tk.Label(
             self,
             text="{0}Half-Price: {1}".format(sIndent, self.movie_totals["Half-Price"]),
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label5.grid(row=5, column=2, sticky="w")
         self.label6 = tk.Label(
             self,
             text="{0}Free: {1}".format(sIndent, self.movie_totals["Free"]),
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label6.grid(row=6, column=2, sticky="w")
         self.label7 = tk.Label(
             self,
             text="{0}Total: {1}".format(sIndent, self.movie_totals["Total"]),
-            bg=user_background)
+            bg=userPrefs["bg"])
         self.label7.grid(row=7, column=2, sticky="w")
 
     def export_timedata(self, movie, finals, movie_timedata):
@@ -807,7 +821,7 @@ class Report(tk.Frame):
             sheet.append_row(new_row)
 
         # timedata
-        if messagebox.askyesno("YSC Helper", "Would you like to update the minute report?"):
+        if userPrefs["nerd"]:
 
             num_of_values = len(movie_timedata) + 1
 
