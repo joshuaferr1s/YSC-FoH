@@ -47,64 +47,67 @@ def fresh_dict():
 
 def import_timedata():
     global movie_data
-    # use credentials to create a client to interact with the Google Drive API
-    scope = [
-        "https://spreadsheets.google.com/feeds",
-        "https://www.googleapis.com/auth/drive"
-    ]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(
-        "client_secret.json", scope)
-    client = gspread.authorize(creds)
+    try:
+        # use credentials to create a client to interact with the Google Drive API
+        scope = [
+            "https://spreadsheets.google.com/feeds",
+            "https://www.googleapis.com/auth/drive"
+        ]
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+            "client_secret.json", scope)
+        client = gspread.authorize(creds)
 
-    # open required spreadhseet and worksheet
-    spreadsheet = client.open("YSC-foh")
-    sheet = spreadsheet.worksheet("Full-List")
-    headers = ["Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"]
-    worksheets = spreadsheet.worksheets()
-    worksheets_names = list()
-    for i in worksheets:
-        worksheets_names.append(i.title)
+        # open required spreadhseet and worksheet
+        spreadsheet = client.open("YSC-foh")
+        sheet = spreadsheet.worksheet("Full-List")
+        headers = ["Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"]
+        worksheets = spreadsheet.worksheets()
+        worksheets_names = list()
+        for i in worksheets:
+            worksheets_names.append(i.title)
 
-    # main sheet
-    cell_range = sheet.range("A2:G" + str(sheet.row_count))
-    k = 0
-    movies_list = list()
-    finals = dict()
-    temp_dict = dict()
-    for cell in cell_range:
-        m_k = k % 7
-        if m_k == 0:
-            cur_movie = cell.value
-            movies_list.append(cell.value)
-            temp_dict[cur_movie] = dict()
-            temp_dict[cur_movie]["final"] = fresh_dict()
-            temp_dict[cur_movie]["final"] = dict()
-        else:
-            temp_dict[cur_movie]["final"][headers[m_k]] = int(cell.value)
-        k += 1
-    movie_data = copy_dict(temp_dict)
-    # timedata
-    for movie in movies_list:
-        if movie in worksheets_names:
-            worksheet = spreadsheet.worksheet(movie)
-            k = 0
-            t_time = dict()
-            cur_time = ""
-            cell_range = worksheet.range("A2:G" + str(worksheet.row_count))
-            k = 0
-            for cell in cell_range:
-                m_k = k % 7
-                if m_k == 0:
-                    cur_time = cell.value
-                    t_time[cur_time] = fresh_dict()
-                else:
-                    t_time[cur_time][headers[m_k]] = int(cell.value)
-                k += 1
-            movie_data[movie]["timedata"] = copy_dict(t_time)
-        else:
-            pass
+        # main sheet
+        cell_range = sheet.range("A2:G" + str(sheet.row_count))
+        k = 0
+        movies_list = list()
+        finals = dict()
+        temp_dict = dict()
+        for cell in cell_range:
+            m_k = k % 7
+            if m_k == 0:
+                cur_movie = cell.value
+                movies_list.append(cell.value)
+                temp_dict[cur_movie] = dict()
+                temp_dict[cur_movie]["final"] = fresh_dict()
+                temp_dict[cur_movie]["final"] = dict()
+            else:
+                temp_dict[cur_movie]["final"][headers[m_k]] = int(cell.value)
+            k += 1
+        movie_data = copy_dict(temp_dict)
+        # timedata
+        for movie in movies_list:
+            if movie in worksheets_names:
+                worksheet = spreadsheet.worksheet(movie)
+                k = 0
+                t_time = dict()
+                cur_time = ""
+                cell_range = worksheet.range("A2:G" + str(worksheet.row_count))
+                k = 0
+                for cell in cell_range:
+                    m_k = k % 7
+                    if m_k == 0:
+                        cur_time = cell.value
+                        t_time[cur_time] = fresh_dict()
+                    else:
+                        t_time[cur_time][headers[m_k]] = int(cell.value)
+                    k += 1
+                movie_data[movie]["timedata"] = copy_dict(t_time)
+            else:
+                pass
 
-    write_movie_dict("movie_database.json", movie_data)
+        write_movie_dict("movie_database.json", movie_data)
+    except:
+        showinfo("Alert!", "Something is wrong with your Google Credentials")
 
 
 def user_preferences(opt):
@@ -783,75 +786,78 @@ class Report(tk.Frame):
         self.label7.grid(row=7, column=2, sticky="w")
 
     def export_timedata(self, movie, finals, movie_timedata):
-        # use credentials to create a client to interact with the Google Drive API
-        scope = [
-            "https://spreadsheets.google.com/feeds",
-            "https://www.googleapis.com/auth/drive"
-        ]
-        creds = ServiceAccountCredentials.from_json_keyfile_name(
-            "client_secret.json", scope)
-        client = gspread.authorize(creds)
-
-        # open required spreadhseet and worksheet
-        spreadsheet = client.open("YSC-foh")
-        sheet = spreadsheet.worksheet("Full-List")
-        headers = [
-            "Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"
-        ]
-        worksheets = spreadsheet.worksheets()
-        worksheets_names = list()
-        for i in worksheets:
-            worksheets_names.append(i.title)
-
-        # main sheet
         try:
-            cell = sheet.find(movie)
-            cell_range = sheet.range(
-                "B" + str(cell.row) + ":G" + str(cell.row))
-            k = 1
-            for cell in cell_range:
-                cell.value = finals[headers[k]]
-                k += 1
-            sheet.update_cells(cell_range)
-        except:
-            new_row = [
-                movie, finals["£3"], finals["£4"], finals["Free"],
-                finals["Half-Price"], finals["Special"], finals["Total"]
+            # use credentials to create a client to interact with the Google Drive API
+            scope = [
+                "https://spreadsheets.google.com/feeds",
+                "https://www.googleapis.com/auth/drive"
             ]
-            sheet.append_row(new_row)
+            creds = ServiceAccountCredentials.from_json_keyfile_name(
+                "client_secret.json", scope)
+            client = gspread.authorize(creds)
 
-        # timedata
-        if userPrefs["nerd"]:
+            # open required spreadhseet and worksheet
+            spreadsheet = client.open("YSC-foh")
+            sheet = spreadsheet.worksheet("Full-List")
+            headers = [
+                "Times", "£3", "£4", "Free", "Half-Price", "Special", "Total"
+            ]
+            worksheets = spreadsheet.worksheets()
+            worksheets_names = list()
+            for i in worksheets:
+                worksheets_names.append(i.title)
 
-            num_of_values = len(movie_timedata) + 1
+            # main sheet
+            try:
+                cell = sheet.find(movie)
+                cell_range = sheet.range(
+                    "B" + str(cell.row) + ":G" + str(cell.row))
+                k = 1
+                for cell in cell_range:
+                    cell.value = finals[headers[k]]
+                    k += 1
+                sheet.update_cells(cell_range)
+            except:
+                new_row = [
+                    movie, finals["£3"], finals["£4"], finals["Free"],
+                    finals["Half-Price"], finals["Special"], finals["Total"]
+                ]
+                sheet.append_row(new_row)
 
-            if movie in worksheets_names:
-                worksheet = spreadsheet.worksheet(movie)
-            else:
-                worksheet = spreadsheet.add_worksheet(movie, num_of_values, 7)
+            # timedata
+            if userPrefs["nerd"]:
 
-            difference = len(movie_timedata) - worksheet.row_count + 1
-            if difference > 0:
-                worksheet.add_rows(difference)
+                num_of_values = len(movie_timedata) + 1
 
-            work_cells = worksheet.range("A1:G" + str(num_of_values))
-            k = 0
-            l = 0
-            cur_time = ""
-            timedata_k = list(movie_timedata.keys())
-            for cell in work_cells:
-                m_k = k % 7
-                if k < 7:
-                    cell.value = headers[k]
-                elif m_k == 0:
-                    cell.value = timedata_k[m_k]
-                    cur_time = timedata_k[m_k]
+                if movie in worksheets_names:
+                    worksheet = spreadsheet.worksheet(movie)
                 else:
-                    cell.value = movie_timedata[cur_time][headers[m_k]]
-                k += 1
+                    worksheet = spreadsheet.add_worksheet(movie, num_of_values, 7)
 
-            worksheet.update_cells(work_cells)
-        showinfo("Alert!", "Upload complete.")
+                difference = len(movie_timedata) - worksheet.row_count + 1
+                if difference > 0:
+                    worksheet.add_rows(difference)
+
+                work_cells = worksheet.range("A1:G" + str(num_of_values))
+                k = 0
+                l = 0
+                cur_time = ""
+                timedata_k = list(movie_timedata.keys())
+                for cell in work_cells:
+                    m_k = k % 7
+                    if k < 7:
+                        cell.value = headers[k]
+                    elif m_k == 0:
+                        cell.value = timedata_k[m_k]
+                        cur_time = timedata_k[m_k]
+                    else:
+                        cell.value = movie_timedata[cur_time][headers[m_k]]
+                    k += 1
+
+                worksheet.update_cells(work_cells)
+            showinfo("Alert!", "Upload complete.")
+        except:
+            showinfo("Alert!", "Something is wrong with your Google Credentials")
 
 
 app = YscFoH()
