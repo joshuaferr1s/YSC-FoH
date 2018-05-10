@@ -119,7 +119,7 @@ def user_preferences(opt):
             pass
     except FileNotFoundError:
         with open("userPrefs.json", 'w') as f:
-            pass
+            write_movie_dict("userPrefs.json", {"bg":"light sky blue","nerd":False})
 
     if opt == "save":
         write_movie_dict("userPrefs.json", userPrefs)
@@ -447,7 +447,7 @@ class Record(tk.Frame):
 
         self.label1 = tk.Label(
             self, text=lab_text, font=("Comic Sans", 20), bg=userPrefs["bg"])
-        self.label1.grid(row=0, columnspan=1)
+        self.label1.grid(row=0, column=0, columnspan=5)
 
         #### £3 ####
         self.button3 = tk.Button(
@@ -682,6 +682,7 @@ class Report(tk.Frame):
         self.button1 = tk.Button() # Main Menu button
         self.button2 = tk.Button() # Upload to Google button
         self.button3 = tk.Button() # Select button
+        self.button4 = tk.Button() # Delete button
 
         self.listMovies = tk.Listbox()  # Movie list
         self.scrollbar = tk.Scrollbar() # Scrollbar for Movie list
@@ -727,6 +728,9 @@ class Report(tk.Frame):
         self.button3 = tk.Button(
             self, highlightbackground=userPrefs["bg"], text="Select", command=lambda: self.display_labels(temp_mov_list[self.listMovies.curselection()[0]]))
         self.button3.grid(row=8, column=0, columnspan=2, sticky="nsew")
+        if (userPrefs["nerd"]):
+            self.button4 = tk.Button(self, highlightbackground=userPrefs["bg"], text="Delete Movie", command=lambda: self.delete_movie(temp_mov_list[self.listMovies.curselection()[0]]))
+            self.button4.grid(row=8, column=2, sticky="nsew")
 
         ## Display the current database ##
         self.listMovies = tk.Listbox(
@@ -798,6 +802,12 @@ class Report(tk.Frame):
             text="{0}Total: {1}".format(sIndent, self.movie_totals["Total"]),
             bg=userPrefs["bg"])
         self.label7.grid(row=7, column=2, sticky="w")
+
+    def delete_movie(self, movie):
+        global movie_data
+        movie_data.pop(movie, None)
+        write_movie_dict("movie_database.json", movie_data)
+        self.draw()
 
     def export_timedata(self, movie, finals, movie_timedata):
         try:
